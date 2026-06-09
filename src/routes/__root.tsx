@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
+import { AuthProvider, useAuth } from "../lib/auth-context";
 
 import appCss from "../styles.css?url";
 
@@ -21,7 +22,9 @@ function NotFoundComponent() {
           That page doesn’t exist on the ANYWHERE FITNESS grid. Let’s get you back on the program.
         </p>
         <div className="mt-8">
-          <Link to="/" className="btn-primary">Return home</Link>
+          <Link to="/" className="btn-primary">
+            Return home
+          </Link>
         </div>
       </div>
     </div>
@@ -43,10 +46,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           We hit an unexpected error. Reload to retry.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <button onClick={() => { router.invalidate(); reset(); }} className="btn-primary">
+          <button
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
+            className="btn-primary"
+          >
             Try again
           </button>
-          <a href="/" className="btn-ghost">Go home</a>
+          <a href="/" className="btn-ghost">
+            Go home
+          </a>
         </div>
       </div>
     </div>
@@ -59,9 +70,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ANYWHERE FITNESS — Build Your Best Self" },
-      { name: "description", content: "AI-powered fitness & nutrition. 500+ workouts, custom plans, adaptive coaching, and India-first meal plans in one premium app." },
+      {
+        name: "description",
+        content:
+          "AI-powered fitness & nutrition. 500+ workouts, custom plans, adaptive coaching, and India-first meal plans in one premium app.",
+      },
       { property: "og:title", content: "ANYWHERE FITNESS — Build Your Best Self" },
-      { property: "og:description", content: "AI-powered fitness & nutrition built for every level. Personal trainer in your pocket." },
+      {
+        property: "og:description",
+        content:
+          "AI-powered fitness & nutrition built for every level. Personal trainer in your pocket.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0e1626" },
@@ -108,16 +127,28 @@ const navLinks = [
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
   return (
     <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/70 border-b border-border">
       <div className="container-x flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md" style={{ background: "var(--gradient-ember)" }}>
-            <svg viewBox="0 0 24 24" className="h-4 w-4 text-background" fill="none" stroke="currentColor" strokeWidth="3">
+          <span
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md"
+            style={{ background: "var(--gradient-ember)" }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4 text-background"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+            >
               <path d="M6 4v16M18 4v16M3 9h3M3 15h3M18 9h3M18 15h3M6 12h12" strokeLinecap="round" />
             </svg>
           </span>
-          <span className="font-display text-2xl tracking-wide leading-none pt-1">ANYWHERE FITNESS</span>
+          <span className="font-display text-2xl tracking-wide leading-none pt-1">
+            ANYWHERE FITNESS
+          </span>
         </Link>
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((l) => (
@@ -132,8 +163,32 @@ function Header() {
           ))}
         </nav>
         <div className="hidden md:flex items-center gap-3">
-          <a href="#download" className="text-sm text-muted-foreground hover:text-foreground transition">Sign in</a>
-          <Link to="/pricing" className="btn-primary !py-2.5 !px-4 text-xs">Get the app</Link>
+          {user ? (
+            <>
+              <span
+                className="text-xs text-muted-foreground max-w-[120px] truncate"
+                title={user.email}
+              >
+                {user.email}
+              </span>
+              <button
+                onClick={() => signOut()}
+                className="text-sm text-primary hover:underline transition cursor-pointer"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <Link
+              to="/auth"
+              className="text-sm text-muted-foreground hover:text-foreground transition"
+            >
+              Sign in
+            </Link>
+          )}
+          <Link to="/pricing" className="btn-primary !py-2.5 !px-4 text-xs">
+            Get the app
+          </Link>
         </div>
         <button onClick={() => setOpen(!open)} aria-label="Menu" className="md:hidden p-2 -mr-2">
           <div className="space-y-1.5">
@@ -146,11 +201,42 @@ function Header() {
         <div className="md:hidden border-t border-border bg-background">
           <div className="container-x py-4 flex flex-col gap-1">
             {navLinks.map((l) => (
-              <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="py-2.5 text-sm text-muted-foreground hover:text-foreground">
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={() => setOpen(false)}
+                className="py-2.5 text-sm text-muted-foreground hover:text-foreground"
+              >
                 {l.label}
               </Link>
             ))}
-            <Link to="/pricing" onClick={() => setOpen(false)} className="btn-primary mt-3 !w-fit">Get the app</Link>
+            {user ? (
+              <>
+                <div className="py-2.5 text-xs text-muted-foreground truncate">
+                  Logged in: {user.email}
+                </div>
+                <button
+                  onClick={() => {
+                    signOut();
+                    setOpen(false);
+                  }}
+                  className="py-2.5 text-sm text-left text-primary hover:underline"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setOpen(false)}
+                className="py-2.5 text-sm text-muted-foreground hover:text-foreground"
+              >
+                Sign in
+              </Link>
+            )}
+            <Link to="/pricing" onClick={() => setOpen(false)} className="btn-primary mt-3 !w-fit">
+              Get the app
+            </Link>
           </div>
         </div>
       )}
@@ -165,9 +251,21 @@ function Footer() {
         <div className="grid gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
             <div className="flex items-center gap-2.5">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md" style={{ background: "var(--gradient-ember)" }}>
-                <svg viewBox="0 0 24 24" className="h-4 w-4 text-background" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M6 4v16M18 4v16M3 9h3M3 15h3M18 9h3M18 15h3M6 12h12" strokeLinecap="round" />
+              <span
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md"
+                style={{ background: "var(--gradient-ember)" }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-4 w-4 text-background"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                >
+                  <path
+                    d="M6 4v16M18 4v16M3 9h3M3 15h3M18 9h3M18 15h3M6 12h12"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </span>
               <span className="font-display text-2xl pt-1">ANYWHERE FITNESS</span>
@@ -179,36 +277,93 @@ function Footer() {
           </div>
           <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-8">
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">Product</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">
+                Product
+              </p>
               <ul className="space-y-2.5 text-sm">
-                <li><Link to="/workouts" className="hover:text-primary">Workouts</Link></li>
-                <li><Link to="/programs" className="hover:text-primary">Programs</Link></li>
-                <li><Link to="/nutrition" className="hover:text-primary">Nutrition</Link></li>
-                <li><Link to="/ai-coach" className="hover:text-primary">AI Coach</Link></li>
+                <li>
+                  <Link to="/workouts" className="hover:text-primary">
+                    Workouts
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/programs" className="hover:text-primary">
+                    Programs
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/nutrition" className="hover:text-primary">
+                    Nutrition
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/ai-coach" className="hover:text-primary">
+                    AI Coach
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">Company</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">
+                Company
+              </p>
               <ul className="space-y-2.5 text-sm">
-                <li><Link to="/about" className="hover:text-primary">About</Link></li>
-                <li><Link to="/pricing" className="hover:text-primary">Pricing</Link></li>
-                <li><a href="#" className="hover:text-primary">Press kit</a></li>
-                <li><a href="#" className="hover:text-primary">Careers</a></li>
+                <li>
+                  <Link to="/about" className="hover:text-primary">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/pricing" className="hover:text-primary">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Press kit
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Careers
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">Legal</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground/70 mb-4">
+                Legal
+              </p>
               <ul className="space-y-2.5 text-sm">
-                <li><a href="#" className="hover:text-primary">Privacy</a></li>
-                <li><a href="#" className="hover:text-primary">Terms</a></li>
-                <li><a href="#" className="hover:text-primary">SOC 2</a></li>
-                <li><a href="#" className="hover:text-primary">GDPR</a></li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Privacy
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    Terms
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    SOC 2
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:text-primary">
+                    GDPR
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
         </div>
         <div className="hairline mt-16 pt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ANYWHERE FITNESS Technologies Pvt. Ltd. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} ANYWHERE FITNESS Technologies Pvt. Ltd. All rights
+            reserved.
+          </p>
           <p className="font-mono">v1.0 — India · English / हिंदी</p>
         </div>
       </div>
@@ -221,13 +376,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

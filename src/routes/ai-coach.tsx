@@ -1,11 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { PageHeader, Section } from "@/components/Section";
+import { AuthGuard } from "@/components/AuthGuard";
 
 export const Route = createFileRoute("/ai-coach")({
   head: () => ({
     meta: [
       { title: "AI Coach — ANYWHERE FITNESS" },
-      { name: "description", content: "The adaptive engine inside ANYWHERE FITNESS: weekly check-ins, plan recalibration, progress tracking, gamified milestones, and a community that pushes you forward." },
+      {
+        name: "description",
+        content:
+          "The adaptive engine inside ANYWHERE FITNESS: weekly check-ins, plan recalibration, progress tracking, gamified milestones, and a community that pushes you forward.",
+      },
       { property: "og:title", content: "AI Coach — ANYWHERE FITNESS" },
       { property: "og:description", content: "A coach that rewrites your plan every week." },
     ],
@@ -14,15 +19,30 @@ export const Route = createFileRoute("/ai-coach")({
 });
 
 const FLOW = [
-  { step: "Sense", body: "Logs workouts, sleep, body weight, energy, RPE, adherence and recovery scores." },
-  { step: "Score", body: "Computes weekly readiness, recovery debt, training stimulus and macro accuracy." },
-  { step: "Adjust", body: "Rewrites next week: volume, intensity, exercise selection, calories, macros." },
-  { step: "Coach", body: "Surfaces what changed, why, and what to focus on this week — in plain English." },
+  {
+    step: "Sense",
+    body: "Logs workouts, sleep, body weight, energy, RPE, adherence and recovery scores.",
+  },
+  {
+    step: "Score",
+    body: "Computes weekly readiness, recovery debt, training stimulus and macro accuracy.",
+  },
+  {
+    step: "Adjust",
+    body: "Rewrites next week: volume, intensity, exercise selection, calories, macros.",
+  },
+  {
+    step: "Coach",
+    body: "Surfaces what changed, why, and what to focus on this week — in plain English.",
+  },
 ];
 
 function AICoachPage() {
   return (
-    <>
+    <AuthGuard
+      title="Adaptive AI Coach"
+      description="Unlock Sunday plan recalibration, recovery calculations, metrics, PR charts, and community feeds."
+    >
       <PageHeader
         eyebrow="AI coaching engine"
         title="The plan rewrites itself."
@@ -47,9 +67,13 @@ function AICoachPage() {
         <div className="grid lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-5">
             <p className="eyebrow">Weekly check-in</p>
-            <h2 className="display-lg mt-4">5 questions.<br/>A new plan.</h2>
+            <h2 className="display-lg mt-4">
+              5 questions.
+              <br />A new plan.
+            </h2>
             <p className="mt-6 text-muted-foreground">
-              Every Sunday, ANYWHERE FITNESS asks how the week felt — workouts, sleep, mood, weight, hunger. In under 90 seconds, your entire plan recalibrates for the week ahead.
+              Every Sunday, ANYWHERE FITNESS asks how the week felt — workouts, sleep, mood, weight,
+              hunger. In under 90 seconds, your entire plan recalibrates for the week ahead.
             </p>
           </div>
           <div className="lg:col-span-7 card-surface p-6 md:p-8">
@@ -63,17 +87,27 @@ function AICoachPage() {
               ].map((row, i) => (
                 <div key={i}>
                   <div className="flex items-baseline justify-between gap-4 mb-2">
-                    <p className="text-sm text-muted-foreground">Q{i + 1}. {row.q}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Q{i + 1}. {row.q}
+                    </p>
                     <p className="mono-num text-sm text-primary whitespace-nowrap">{row.a}</p>
                   </div>
                   <div className="h-1 bg-border rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${[80, 64, 70, 55, 75][i]}%`, background: "var(--gradient-ember)" }} />
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${[80, 64, 70, 55, 75][i]}%`,
+                        background: "var(--gradient-ember)",
+                      }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-              <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Calibrating…</p>
+              <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
+                Calibrating…
+              </p>
               <p className="text-sm font-medium text-primary">New plan in 12s →</p>
             </div>
           </div>
@@ -95,7 +129,10 @@ function AICoachPage() {
                 "Achievement badges & milestones",
                 "Exportable PDF reports for coaches",
               ].map((s) => (
-                <li key={s} className="flex items-start gap-2"><span className="text-primary mt-1">·</span>{s}</li>
+                <li key={s} className="flex items-start gap-2">
+                  <span className="text-primary mt-1">·</span>
+                  {s}
+                </li>
               ))}
             </ul>
           </div>
@@ -110,7 +147,10 @@ function AICoachPage() {
                 "Live sessions with certified trainers (Pro)",
                 "1-1 coach messaging (Pro)",
               ].map((s) => (
-                <li key={s} className="flex items-start gap-2"><span className="text-primary mt-1">·</span>{s}</li>
+                <li key={s} className="flex items-start gap-2">
+                  <span className="text-primary mt-1">·</span>
+                  {s}
+                </li>
               ))}
             </ul>
           </div>
@@ -121,10 +161,14 @@ function AICoachPage() {
         <h2 className="display-lg">A coach in your pocket.</h2>
         <p className="mt-4 text-muted-foreground">From your first push-up to your first PR.</p>
         <div className="mt-8 flex justify-center gap-3">
-          <Link to="/pricing" className="btn-primary">See pricing</Link>
-          <Link to="/programs" className="btn-ghost">Browse programs</Link>
+          <Link to="/pricing" className="btn-primary">
+            See pricing
+          </Link>
+          <Link to="/programs" className="btn-ghost">
+            Browse programs
+          </Link>
         </div>
       </Section>
-    </>
+    </AuthGuard>
   );
 }

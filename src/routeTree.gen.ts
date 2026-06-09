@@ -13,6 +13,7 @@ import { Route as WorkoutsRouteImport } from './routes/workouts'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NutritionRouteImport } from './routes/nutrition'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,6 +38,11 @@ const NutritionRoute = NutritionRouteImport.update({
   path: '/nutrition',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AiCoachRoute = AiCoachRouteImport.update({
   id: '/ai-coach',
   path: '/ai-coach',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ai-coach': typeof AiCoachRoute
+  '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ai-coach': typeof AiCoachRoute
+  '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ai-coach': typeof AiCoachRoute
+  '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ai-coach'
+    | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ai-coach'
+    | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/ai-coach'
+    | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AiCoachRoute: typeof AiCoachRoute
+  AuthRoute: typeof AuthRoute
   NutritionRoute: typeof NutritionRoute
   PricingRoute: typeof PricingRoute
   ProgramsRoute: typeof ProgramsRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NutritionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ai-coach': {
       id: '/ai-coach'
       path: '/ai-coach'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AiCoachRoute: AiCoachRoute,
+  AuthRoute: AuthRoute,
   NutritionRoute: NutritionRoute,
   PricingRoute: PricingRoute,
   ProgramsRoute: ProgramsRoute,

@@ -12,7 +12,7 @@ interface WorkoutExercise {
 
 export function WorkoutCustomizer() {
   const [step, setStep] = useState<"profile" | "stats" | "result">("profile");
-  
+
   // Profile inputs
   const [name, setName] = useState("");
   const [weight, setWeight] = useState(75);
@@ -48,21 +48,21 @@ export function WorkoutCustomizer() {
         sets: 4,
         reps: "5",
         weight: `${Math.round(squatPr * 0.75)} kg (75% of 1RM)`,
-        notes: "Focus on deep squat and explosive ascent. Rest 3-5 mins."
+        notes: "Focus on deep squat and explosive ascent. Rest 3-5 mins.",
       });
       workout.push({
         name: "Competition Bench Press",
         sets: 4,
         reps: "5",
         weight: `${Math.round(benchPr * 0.75)} kg (75% of 1RM)`,
-        notes: "Keep shoulder blades retracted and drive from legs. Rest 3 mins."
+        notes: "Keep shoulder blades retracted and drive from legs. Rest 3 mins.",
       });
       workout.push({
         name: "Deadlift (Conventional or Sumo)",
         sets: 3,
         reps: "5",
-        weight: `${Math.round(deadliftPr * 0.70)} kg (70% of 1RM)`,
-        notes: "Keep back flat and pull bar close to shins. Rest 4 mins."
+        weight: `${Math.round(deadliftPr * 0.7)} kg (70% of 1RM)`,
+        notes: "Keep back flat and pull bar close to shins. Rest 4 mins.",
       });
     } else if (regimen === "Bodybuilding") {
       const isAdvanced = experience === "Advanced";
@@ -72,28 +72,28 @@ export function WorkoutCustomizer() {
         sets: setMultiplier,
         reps: targetReps,
         weight: "Moderate to Heavy",
-        notes: "Targeting upper chest. Focus on contraction at the top."
+        notes: "Targeting upper chest. Focus on contraction at the top.",
       });
       workout.push({
         name: "Lat Pulldown (Wide Grip)",
         sets: setMultiplier,
         reps: targetReps,
         weight: "Moderate",
-        notes: "Pull down to upper chest, controlled eccentric."
+        notes: "Pull down to upper chest, controlled eccentric.",
       });
       workout.push({
         name: "Bulgarian Split Squat",
         sets: 3,
         reps: "10-12 per leg",
         weight: "Light to Moderate",
-        notes: "Deep stretch on quads and glutes."
+        notes: "Deep stretch on quads and glutes.",
       });
       workout.push({
         name: "Dumbbell Lateral Raise",
         sets: 4,
         reps: "12-15",
         weight: "Light",
-        notes: "Control the weight on the way down, do not swing."
+        notes: "Control the weight on the way down, do not swing.",
       });
     } else if (regimen === "Calisthenics") {
       workout.push({
@@ -101,28 +101,28 @@ export function WorkoutCustomizer() {
         sets: 4,
         reps: `${Math.max(2, Math.round(maxPullups * 0.7))}`,
         weight: "Bodyweight",
-        notes: "Full range of motion: chin over bar to dead hang."
+        notes: "Full range of motion: chin over bar to dead hang.",
       });
       workout.push({
         name: "Parallel Bar Dips",
         sets: 4,
         reps: `${Math.max(2, Math.round(maxDips * 0.75))}`,
         weight: "Bodyweight",
-        notes: "Go down to 90 degrees elbow bend."
+        notes: "Go down to 90 degrees elbow bend.",
       });
       workout.push({
         name: "Push-ups (Diamond or Regular)",
         sets: 3,
         reps: `${Math.max(5, Math.round(maxPushups * 0.7))}`,
         weight: "Bodyweight",
-        notes: "Keep body in straight line, touch chest to floor."
+        notes: "Keep body in straight line, touch chest to floor.",
       });
       workout.push({
         name: "Hanging Leg Raises",
         sets: 3,
         reps: "8-10",
         weight: "Bodyweight",
-        notes: "Raise legs to bar without using momentum."
+        notes: "Raise legs to bar without using momentum.",
       });
     } else if (regimen === "Running") {
       workout.push({
@@ -130,21 +130,21 @@ export function WorkoutCustomizer() {
         sets: 4,
         reps: "1000m",
         weight: "Cardio",
-        notes: `Target Pace: approx ${fivekPr} 5k pace. Rest 2 mins jogging between intervals.`
+        notes: `Target Pace: approx ${fivekPr} 5k pace. Rest 2 mins jogging between intervals.`,
       });
       workout.push({
         name: "Easy Recovery Run",
         sets: 1,
         reps: "30 mins",
         weight: "Cardio",
-        notes: "Very easy conversation pace to build aerobic capacity."
+        notes: "Very easy conversation pace to build aerobic capacity.",
       });
       workout.push({
         name: "Single-Leg Strength & Balance Work",
         sets: 3,
         reps: "12 reps each",
         weight: "Bodyweight",
-        notes: "Single-leg glute bridges and calf raises to prevent running injuries."
+        notes: "Single-leg glute bridges and calf raises to prevent running injuries.",
       });
     }
 
@@ -157,11 +157,15 @@ export function WorkoutCustomizer() {
       {step === "profile" && (
         <div>
           <h3 className="display-md text-primary">1. Tell us about yourself</h3>
-          <p className="text-sm text-muted-foreground mt-2 mb-6">Let's build a customized template adjusted for your profile.</p>
-          
+          <p className="text-sm text-muted-foreground mt-2 mb-6">
+            Let's build a customized template adjusted for your profile.
+          </p>
+
           <div className="space-y-4">
             <div>
-              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Your Name</label>
+              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Your Name
+              </label>
               <input
                 type="text"
                 value={name}
@@ -173,7 +177,9 @@ export function WorkoutCustomizer() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Weight (kg)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Weight (kg)
+                </label>
                 <input
                   type="number"
                   value={weight}
@@ -182,7 +188,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Height (cm)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Height (cm)
+                </label>
                 <input
                   type="number"
                   value={height}
@@ -193,22 +201,26 @@ export function WorkoutCustomizer() {
             </div>
 
             <div>
-              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Regimen Focus</label>
+              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Regimen Focus
+              </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {(["Powerlifting", "Bodybuilding", "Calisthenics", "Running"] as Regimen[]).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setRegimen(r)}
-                    className={`text-xs py-3 px-2 rounded-lg border transition ${
-                      regimen === r
-                        ? "bg-primary border-primary text-primary-foreground font-semibold"
-                        : "border-border bg-surface-2 hover:border-primary/50 text-muted-foreground"
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
+                {(["Powerlifting", "Bodybuilding", "Calisthenics", "Running"] as Regimen[]).map(
+                  (r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRegimen(r)}
+                      className={`text-xs py-3 px-2 rounded-lg border transition ${
+                        regimen === r
+                          ? "bg-primary border-primary text-primary-foreground font-semibold"
+                          : "border-border bg-surface-2 hover:border-primary/50 text-muted-foreground"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
           </div>
@@ -226,12 +238,16 @@ export function WorkoutCustomizer() {
       {step === "stats" && (
         <div>
           <h3 className="display-md text-primary">2. Regimen Stats ({regimen})</h3>
-          <p className="text-sm text-muted-foreground mt-2 mb-6">Enter your current metrics so we can calculate training loads.</p>
+          <p className="text-sm text-muted-foreground mt-2 mb-6">
+            Enter your current metrics so we can calculate training loads.
+          </p>
 
           {regimen === "Powerlifting" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Current Squat 1RM (kg)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Current Squat 1RM (kg)
+                </label>
                 <input
                   type="number"
                   value={squatPr}
@@ -240,7 +256,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Current Bench Press 1RM (kg)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Current Bench Press 1RM (kg)
+                </label>
                 <input
                   type="number"
                   value={benchPr}
@@ -249,7 +267,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Current Deadlift 1RM (kg)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Current Deadlift 1RM (kg)
+                </label>
                 <input
                   type="number"
                   value={deadliftPr}
@@ -263,7 +283,9 @@ export function WorkoutCustomizer() {
           {regimen === "Bodybuilding" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Preferred Target Reps</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Preferred Target Reps
+                </label>
                 <select
                   value={targetReps}
                   onChange={(e) => setTargetReps(e.target.value)}
@@ -275,7 +297,9 @@ export function WorkoutCustomizer() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Experience Level</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Experience Level
+                </label>
                 <div className="flex gap-2">
                   {["Beginner", "Intermediate", "Advanced"].map((exp) => (
                     <button
@@ -299,7 +323,9 @@ export function WorkoutCustomizer() {
           {regimen === "Calisthenics" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Consecutive Pull-ups</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Max Consecutive Pull-ups
+                </label>
                 <input
                   type="number"
                   value={maxPullups}
@@ -308,7 +334,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Consecutive Dips</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Max Consecutive Dips
+                </label>
                 <input
                   type="number"
                   value={maxDips}
@@ -317,7 +345,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Consecutive Push-ups</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Max Consecutive Push-ups
+                </label>
                 <input
                   type="number"
                   value={maxPushups}
@@ -331,7 +361,9 @@ export function WorkoutCustomizer() {
           {regimen === "Running" && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Current 5K PR (MM:SS)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Current 5K PR (MM:SS)
+                </label>
                 <input
                   type="text"
                   value={fivekPr}
@@ -341,7 +373,9 @@ export function WorkoutCustomizer() {
                 />
               </div>
               <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Weekly Running Volume (km)</label>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Weekly Running Volume (km)
+                </label>
                 <input
                   type="number"
                   value={weeklyMileage}
@@ -353,18 +387,10 @@ export function WorkoutCustomizer() {
           )}
 
           <div className="flex gap-3 mt-8">
-            <button
-              type="button"
-              onClick={() => setStep("profile")}
-              className="btn-ghost flex-1"
-            >
+            <button type="button" onClick={() => setStep("profile")} className="btn-ghost flex-1">
               ← Back
             </button>
-            <button
-              type="button"
-              onClick={handleCalculate}
-              className="btn-primary flex-1"
-            >
+            <button type="button" onClick={handleCalculate} className="btn-primary flex-1">
               Generate Program
             </button>
           </div>
@@ -380,7 +406,10 @@ export function WorkoutCustomizer() {
 
           <div className="space-y-4">
             {generatedWorkout.map((ex, i) => (
-              <div key={i} className="bg-surface-2 border border-border p-4 rounded-xl hover:border-primary/30 transition">
+              <div
+                key={i}
+                className="bg-surface-2 border border-border p-4 rounded-xl hover:border-primary/30 transition"
+              >
                 <div className="flex justify-between items-start">
                   <h4 className="font-semibold text-foreground">{ex.name}</h4>
                   <span className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded font-mono">
@@ -388,12 +417,14 @@ export function WorkoutCustomizer() {
                   </span>
                 </div>
                 <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Target Load:</span>
-                  <span className="text-sm font-semibold text-foreground font-mono">{ex.weight}</span>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Target Load:
+                  </span>
+                  <span className="text-sm font-semibold text-foreground font-mono">
+                    {ex.weight}
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {ex.notes}
-                </p>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{ex.notes}</p>
               </div>
             ))}
           </div>

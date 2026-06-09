@@ -1,11 +1,21 @@
 import type { ReactNode } from "react";
 
-export function PageHeader({ eyebrow, title, lead }: { eyebrow: string; title: string; lead?: string }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  lead,
+}: {
+  eyebrow: string;
+  title: string;
+  lead?: string;
+}) {
   return (
     <section className="container-x pt-20 md:pt-28 pb-12">
       <p className="eyebrow">{eyebrow}</p>
       <h1 className="display-xl mt-5 max-w-5xl">{title}</h1>
-      {lead && <p className="mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">{lead}</p>}
+      {lead && (
+        <p className="mt-6 max-w-2xl text-lg text-muted-foreground leading-relaxed">{lead}</p>
+      )}
     </section>
   );
 }
