@@ -1,0 +1,208 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* FitForge — premium dark editorial fitness brand
+   Background: deep obsidian. Accent: molten amber.
+   Type: Bebas Neue (display), Inter (body), JetBrains Mono (numerics).
+*/
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ember: var(--ember);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: "Bebas Neue", "Impact", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(0.14 0.012 60);
+  --foreground: oklch(0.97 0.01 80);
+  --surface: oklch(0.18 0.014 60);
+  --surface-2: oklch(0.22 0.015 60);
+
+  --card: oklch(0.18 0.014 60);
+  --card-foreground: oklch(0.97 0.01 80);
+  --popover: oklch(0.18 0.014 60);
+  --popover-foreground: oklch(0.97 0.01 80);
+
+  --primary: oklch(0.65 0.22 250);          /* electric blue */
+  --primary-foreground: oklch(0.98 0.01 240);
+  --ember: oklch(0.5 0.15 240);             /* ocean blue */
+
+  --secondary: oklch(0.2 0.015 240);
+  --secondary-foreground: oklch(0.97 0.01 240);
+  --muted: oklch(0.18 0.012 240);
+  --muted-foreground: oklch(0.65 0.03 240);
+  --accent: oklch(0.65 0.22 250);
+  --accent-foreground: oklch(0.98 0.01 240);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  --border: oklch(0.24 0.015 240);
+  --border-strong: oklch(0.34 0.02 240);
+  --input: oklch(0.24 0.015 240);
+  --ring: oklch(0.65 0.22 250);
+
+  --gradient-ember: linear-gradient(135deg, oklch(0.65 0.22 250), oklch(0.45 0.18 260));
+  --gradient-fade: linear-gradient(180deg, transparent, oklch(0.14 0.012 240) 90%);
+  --shadow-glow: 0 0 60px -10px oklch(0.65 0.22 250 / 0.35);
+  --shadow-card: 0 30px 60px -20px oklch(0 0 0 / 0.6);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.65 0.22 250 / 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 100%, oklch(0.45 0.18 260 / 0.05), transparent);
+  }
+  ::selection { background: var(--primary); color: var(--primary-foreground); }
+}
+
+@utility container-x {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  max-width: 80rem;
+  @media (min-width: 768px) { padding-inline: 2.5rem; }
+}
+
+@utility display-xl {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 0.88;
+  font-size: clamp(3.5rem, 10vw, 9rem);
+  text-transform: uppercase;
+}
+
+@utility display-lg {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 0.9;
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  text-transform: uppercase;
+}
+
+@utility display-md {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.95;
+  font-size: clamp(1.75rem, 3.5vw, 3rem);
+  text-transform: uppercase;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+@utility mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.95rem 1.6rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: var(--shadow-glow);
+  &:hover { transform: translateY(-1px); box-shadow: 0 0 80px -10px oklch(0.78 0.18 65 / 0.6); }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.6rem;
+  background: transparent;
+  color: var(--foreground);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+  &:hover { background: var(--surface); border-color: var(--primary); }
+}
+
+@utility card-surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  transition: border-color 0.25s, transform 0.25s;
+  &:hover { border-color: var(--border-strong); }
+}
+
+@utility hairline {
+  border-top: 1px solid var(--border);
+}
+
+@utility grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+  }
+}
