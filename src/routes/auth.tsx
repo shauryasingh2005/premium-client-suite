@@ -40,14 +40,12 @@ function AuthPage() {
     setInfoMessage(null);
 
     try {
-      // Generate a random 6 digit code as requested
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(code);
+      await sendOtp(email);
       setStep("otp");
-      setInfoMessage(`DEMO MODE: Your OTP code is ${code}`);
+      setInfoMessage("We've sent a 6-digit verification code to your email inbox.");
     } catch (err: unknown) {
       console.error(err);
-      setError("Failed to generate OTP code.");
+      setError(err instanceof Error ? err.message : "Failed to send OTP code.");
     } finally {
       setLoading(false);
     }
@@ -61,16 +59,12 @@ function AuthPage() {
     setError(null);
 
     try {
-      if (otp === generatedOtp) {
-        loginMockUser(email);
-        navigate({ to: "/workouts" });
-      } else {
-        throw new Error("Invalid OTP code. Please check the code provided above.");
-      }
+      await verifyOtp(email, otp);
+      navigate({ to: "/workouts" });
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : String(err);
-      setError(message);
+      setError(`Invalid OTP code: ${message}`);
     } finally {
       setLoading(false);
     }

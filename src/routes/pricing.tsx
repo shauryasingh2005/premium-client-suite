@@ -44,12 +44,50 @@ function PricingPage() {
   const [utr, setUtr] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  // GPay Phone OTP Verification States
+  const [phone, setPhone] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [phoneOtp, setPhoneOtp] = useState("");
+  const [generatedPhoneOtp, setGeneratedPhoneOtp] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [smsNotification, setSmsNotification] = useState<string | null>(null);
+
   const monthly = 499;
   const annualMo = 299;
   const yearly = annualMo * 12;
 
+  const handleSendPhoneOtp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!phone || phone.length < 10) {
+      setOtpError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+    setOtpError(null);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedPhoneOtp(code);
+    setOtpSent(true);
+    // Simulate SMS notification popup
+    setSmsNotification(`SMS to ${phone}: Your ANYWHERE FITNESS GPay subscription OTP code is ${code}`);
+  };
+
+  const handleVerifyPhoneOtp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (phoneOtp === generatedPhoneOtp) {
+      setPhoneVerified(true);
+      setOtpError(null);
+      setSmsNotification(null);
+    } else {
+      setOtpError("Invalid Phone OTP code. Please check the code provided above.");
+    }
+  };
+
   const handlePaymentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!phoneVerified) {
+      setOtpError("GPay Phone OTP verification is required to subscribe.");
+      return;
+    }
     if (utr.trim()) {
       setSubmitted(true);
     }
@@ -161,50 +199,142 @@ function PricingPage() {
                 setShowPayment(false);
                 setSubmitted(false);
                 setUtr("");
+                setPhone("");
+                setOtpSent(false);
+                setPhoneOtp("");
+                setPhoneVerified(false);
+                setOtpError(null);
+                setSmsNotification(null);
               }}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-xl font-bold font-mono"
             >
               ✕
             </button>
 
+            {smsNotification && (
+              <div className="absolute top-2 left-6 right-6 z-50 bg-primary border border-primary-foreground/30 p-3 rounded-lg text-xs font-mono text-primary-foreground flex flex-col gap-1 shadow-lg animate-bounce">
+                <span className="font-bold">💬 SMS Notification Simulation:</span>
+                <span>{smsNotification}</span>
+              </div>
+            )}
+
             {!submitted ? (
               <div className="text-center">
-                <h3 className="display-md text-primary">UPI QR Payment</h3>
+                <h3 className="display-md text-primary">Google Pay Subscription</h3>
                 <p className="text-xs text-muted-foreground mt-2 mb-6">
-                  Scan the QR code below using any UPI app (GPay, PhonePe, Paytm) to subscribe to
-                  Pro.
+                  Verify your Google Pay linked phone number with a 6-digit SMS OTP to continue.
                 </p>
 
-                <div className="mx-auto max-w-[240px] border border-border p-3 bg-white rounded-2xl mb-4">
-                  <img
-                    src="/upi-qr.jpg"
-                    alt="Payment QR Code"
-                    className="w-full h-auto object-contain rounded-xl"
-                  />
-                </div>
-
-                <p className="text-xs font-mono bg-surface-2 py-2 px-3 rounded text-primary mb-6">
-                  UPI ID: shauryasinghthakur108@oksbi
-                </p>
-
-                <form onSubmit={handlePaymentSubmit} className="space-y-4 text-left">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                      Enter UPI Transaction ID / UTR
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={utr}
-                      onChange={(e) => setUtr(e.target.value)}
-                      placeholder="e.g. 12-digit reference number"
-                      className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-foreground"
-                    />
+                {otpError && (
+                  <div className="mb-4 text-xs bg-destructive/15 border border-destructive/30 p-2.5 rounded text-destructive-foreground text-left">
+                    {otpError}
                   </div>
-                  <button type="submit" className="btn-primary w-full mt-2">
-                    Submit for Verification
-                  </button>
-                </form>
+                )}
+
+                {!phoneVerified ? (
+                  <div className="space-y-4 text-left">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                        Google Pay Phone Number
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="tel"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="e.g. 9876543210"
+                          disabled={otpSent}
+                          className="flex-1 bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-foreground"
+                        />
+                        {!otpSent && (
+                          <button
+                            type="button"
+                            onClick={handleSendPhoneOtp}
+                            className="btn-primary text-xs !py-2.5"
+                          >
+                            Send OTP
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {otpSent && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                            Enter SMS OTP
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={6}
+                            value={phoneOtp}
+                            onChange={(e) => setPhoneOtp(e.target.value)}
+                            placeholder="123456"
+                            className="w-full text-center tracking-widest font-mono bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-foreground"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOtpSent(false);
+                              setPhoneOtp("");
+                            }}
+                            className="btn-ghost text-xs flex-1 !py-2"
+                          >
+                            Change Number
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleVerifyPhoneOtp}
+                            className="btn-primary text-xs flex-1 !py-2"
+                          >
+                            Verify OTP
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="mb-4 bg-green-500/10 border border-green-500/30 p-3 rounded-lg text-xs text-green-400 font-semibold flex items-center justify-center gap-1.5">
+                      ✓ GPay Phone Number Verified ({phone})
+                    </div>
+
+                    <div className="mx-auto max-w-[200px] border border-border p-2 bg-white rounded-2xl mb-4">
+                      <img
+                        src="/upi-qr.jpg"
+                        alt="Payment QR Code"
+                        className="w-full h-auto object-contain rounded-xl"
+                      />
+                    </div>
+
+                    <p className="text-xs font-mono bg-surface-2 py-2 px-3 rounded text-primary mb-4">
+                      UPI ID: shauryasinghthakur108@oksbi
+                    </p>
+
+                    <form onSubmit={handlePaymentSubmit} className="space-y-4 text-left">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+                          Enter UPI Transaction ID / UTR
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={utr}
+                          onChange={(e) => setUtr(e.target.value)}
+                          placeholder="e.g. 12-digit reference number"
+                          className="w-full bg-surface-2 border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-foreground"
+                        />
+                      </div>
+                      <button type="submit" className="btn-primary w-full mt-2">
+                        Submit for Verification
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-6">

@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useAuth } from "../lib/auth-context";
+import { supabase } from "../lib/supabase";
 
 type Regimen = "Powerlifting" | "Bodybuilding" | "Calisthenics" | "Running";
 
@@ -38,6 +40,40 @@ export function WorkoutCustomizer() {
   const [weeklyMileage, setWeeklyMileage] = useState(20);
 
   const [generatedWorkout, setGeneratedWorkout] = useState<WorkoutExercise[]>([]);
+  const { user } = useAuth();
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const saveWorkout = async () => {
+    if (!user) return;
+    setSaveStatus("saving");
+    try {
+      // First update profile
+      const { error: profileErr } = await supabase.from("profiles").upsert({
+        id: user.id,
+        email: user.email,
+        full_name: name || undefined,
+        weight: weight || undefined,
+        height: height || undefined,
+        regimen: regimen,
+        updated_at: new Date().toISOString(),
+      });
+      if (profileErr) throw profileErr;
+
+      // Insert workout
+      const { error } = await supabase.from("workouts").insert({
+        user_id: user.id,
+        name: `${regimen} Workout`,
+        regimen: regimen,
+        exercises: generatedWorkout,
+      });
+
+      if (error) throw error;
+      setSaveStatus("saved");
+    } catch (err) {
+      console.error("Error saving workout:", err);
+      setSaveStatus("error");
+    }
+  };
 
   const handleCalculate = () => {
     const workout: WorkoutExercise[] = [];
@@ -429,10 +465,35 @@ export function WorkoutCustomizer() {
             ))}
           </div>
 
+          {user && (
+            <div className="mt-6">
+              <button
+                type="button"
+                onClick={saveWorkout}
+                disabled={saveStatus === "saving" || saveStatus === "saved"}
+                className={`w-full text-xs py-3 rounded-lg border transition font-semibold ${
+                  saveStatus === "saved"
+                    ? "bg-green-600 border-green-600 text-white cursor-default"
+                    : saveStatus === "saving"
+                      ? "bg-primary/50 border-primary/50 text-white cursor-not-allowed"
+                      : "btn-primary"
+                }`}
+              >
+                {saveStatus === "saving" && "Saving Workout..."}
+                {saveStatus === "saved" && "✓ Workout Saved to Profile"}
+                {saveStatus === "idle" && "Save Workout to Profile"}
+                {saveStatus === "error" && "Error Saving. Try Again?"}
+              </button>
+            </div>
+          )}
+
           <div className="mt-8 flex gap-3">
             <button
               type="button"
-              onClick={() => setStep("stats")}
+              onClick={() => {
+                setStep("stats");
+                setSaveStatus("idle");
+              }}
               className="btn-ghost flex-1 text-xs"
             >
               Adjust Inputs
