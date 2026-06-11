@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT,
     full_name TEXT,
+    phone TEXT,
     weight NUMERIC,
     height NUMERIC,
     regimen TEXT,
@@ -76,8 +77,13 @@ CREATE POLICY "Allow users to delete their own nutrition plans" ON public.nutrit
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, email, full_name)
-    VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name');
+    INSERT INTO public.profiles (id, email, full_name, phone)
+    VALUES (
+        new.id, 
+        new.email, 
+        new.raw_user_meta_data->>'full_name',
+        coalesce(new.phone, new.raw_user_meta_data->>'phone')
+    );
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

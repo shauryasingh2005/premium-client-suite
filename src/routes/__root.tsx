@@ -166,10 +166,11 @@ function Header() {
           {user ? (
             <>
               <span
-                className="text-xs text-muted-foreground max-w-[120px] truncate"
-                title={user.email}
+                className="text-xs text-muted-foreground max-w-[200px] truncate"
+                title={`${user.user_metadata?.full_name || user.email}${user.phone ? ` (${user.phone})` : ""}`}
               >
-                {user.email}
+                {user.user_metadata?.full_name || user.email}
+                {user.phone && <span className="text-[10px] opacity-70 block">{user.phone}</span>}
               </span>
               <button
                 onClick={() => signOut()}
@@ -213,7 +214,8 @@ function Header() {
             {user ? (
               <>
                 <div className="py-2.5 text-xs text-muted-foreground truncate">
-                  Logged in: {user.email}
+                  Logged in: {user.user_metadata?.full_name || user.email}
+                  {user.phone && ` (${user.phone})`}
                 </div>
                 <button
                   onClick={() => {

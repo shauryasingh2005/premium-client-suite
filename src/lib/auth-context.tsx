@@ -7,7 +7,7 @@ const AuthContext = createContext<{
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  loginMockUser: (email: string) => void;
+  loginMockUser: (email: string, fullName?: string, phone?: string) => void;
 }>({
   user: null,
   session: null,
@@ -63,12 +63,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const loginMockUser = (email: string) => {
+  const loginMockUser = (email: string, fullName?: string, phone?: string) => {
     const mockSession = {
       access_token: "mock-token",
       user: {
         id: "mock-id",
         email: email,
+        phone: phone,
+        user_metadata: {
+          full_name: fullName,
+        },
       },
     };
     localStorage.setItem("mock_session", JSON.stringify(mockSession));

@@ -67,8 +67,8 @@ function PricingPage() {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedPhoneOtp(code);
     setOtpSent(true);
-    // Simulate SMS notification popup
-    setSmsNotification(`SMS to ${phone}: Your ANYWHERE FITNESS GPay subscription OTP code is ${code}`);
+    // Simulate SMS notification popup sent to 7840003630
+    setSmsNotification(`SMS to 7840003630: Your ANYWHERE FITNESS GPay subscription OTP code is ${code}`);
   };
 
   const handleVerifyPhoneOtp = (e: React.MouseEvent) => {
@@ -78,7 +78,7 @@ function PricingPage() {
       setOtpError(null);
       setSmsNotification(null);
     } else {
-      setOtpError("Invalid Phone OTP code. Please check the code provided above.");
+      setOtpError("Invalid Phone OTP code. Please check the code sent to 7840003630.");
     }
   };
 
