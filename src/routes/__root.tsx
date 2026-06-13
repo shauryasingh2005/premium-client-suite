@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthProvider, useAuth } from "../lib/auth-context";
+import { ChatAssistant } from "../components/ChatAssistant";
+
 
 import appCss from "../styles.css?url";
 
@@ -73,13 +75,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "AI-powered fitness & nutrition. 500+ workouts, custom plans, adaptive coaching, and India-first meal plans in one premium app.",
+          "Adaptive fitness & nutrition. 500+ workouts, custom plans, personalized coaching, and India-first meal plans in one premium app.",
       },
       { property: "og:title", content: "ANYWHERE FITNESS — Build Your Best Self" },
       {
         property: "og:description",
         content:
-          "AI-powered fitness & nutrition built for every level. Personal trainer in your pocket.",
+          "Adaptive fitness & nutrition built for every level. Personal trainer in your pocket.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -120,7 +122,7 @@ const navLinks = [
   { to: "/workouts", label: "Workouts" },
   { to: "/programs", label: "Programs" },
   { to: "/nutrition", label: "Nutrition" },
-  { to: "/ai-coach", label: "AI Coach" },
+  { to: "/smart-coach", label: "Smart Coach" },
   { to: "/pricing", label: "Pricing" },
   { to: "/about", label: "About" },
 ] as const;
@@ -273,7 +275,7 @@ function Footer() {
               <span className="font-display text-2xl pt-1">ANYWHERE FITNESS</span>
             </div>
             <p className="mt-5 max-w-sm text-sm text-muted-foreground leading-relaxed">
-              Your AI-powered fitness & nutrition companion. Built in India for the world.
+              Your personalized fitness & nutrition companion. Built in India for the world.
             </p>
             <p className="mt-6 eyebrow">Build Your Best Self</p>
           </div>
@@ -299,8 +301,8 @@ function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/ai-coach" className="hover:text-primary">
-                    AI Coach
+                  <Link to="/smart-coach" className="hover:text-primary">
+                    Smart Coach
                   </Link>
                 </li>
               </ul>
@@ -385,6 +387,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <Footer />
+          <ChatAssistant />
         </div>
       </AuthProvider>
     </QueryClientProvider>

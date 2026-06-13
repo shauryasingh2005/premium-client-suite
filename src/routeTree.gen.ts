@@ -10,17 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkoutsRouteImport } from './routes/workouts'
+import { Route as SmartCoachRouteImport } from './routes/smart-coach'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as NutritionRouteImport } from './routes/nutrition'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AiCoachRouteImport } from './routes/ai-coach'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 
 const WorkoutsRoute = WorkoutsRouteImport.update({
   id: '/workouts',
   path: '/workouts',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SmartCoachRoute = SmartCoachRouteImport.update({
+  id: '/smart-coach',
+  path: '/smart-coach',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramsRoute = ProgramsRouteImport.update({
@@ -43,11 +48,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AiCoachRoute = AiCoachRouteImport.update({
-  id: '/ai-coach',
-  path: '/ai-coach',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -62,32 +62,32 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/ai-coach': typeof AiCoachRoute
   '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
+  '/smart-coach': typeof SmartCoachRoute
   '/workouts': typeof WorkoutsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/ai-coach': typeof AiCoachRoute
   '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
+  '/smart-coach': typeof SmartCoachRoute
   '/workouts': typeof WorkoutsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/ai-coach': typeof AiCoachRoute
   '/auth': typeof AuthRoute
   '/nutrition': typeof NutritionRoute
   '/pricing': typeof PricingRoute
   '/programs': typeof ProgramsRoute
+  '/smart-coach': typeof SmartCoachRoute
   '/workouts': typeof WorkoutsRoute
 }
 export interface FileRouteTypes {
@@ -95,42 +95,42 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/ai-coach'
     | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
+    | '/smart-coach'
     | '/workouts'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/ai-coach'
     | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
+    | '/smart-coach'
     | '/workouts'
   id:
     | '__root__'
     | '/'
     | '/about'
-    | '/ai-coach'
     | '/auth'
     | '/nutrition'
     | '/pricing'
     | '/programs'
+    | '/smart-coach'
     | '/workouts'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AiCoachRoute: typeof AiCoachRoute
   AuthRoute: typeof AuthRoute
   NutritionRoute: typeof NutritionRoute
   PricingRoute: typeof PricingRoute
   ProgramsRoute: typeof ProgramsRoute
+  SmartCoachRoute: typeof SmartCoachRoute
   WorkoutsRoute: typeof WorkoutsRoute
 }
 
@@ -141,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/workouts'
       fullPath: '/workouts'
       preLoaderRoute: typeof WorkoutsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/smart-coach': {
+      id: '/smart-coach'
+      path: '/smart-coach'
+      fullPath: '/smart-coach'
+      preLoaderRoute: typeof SmartCoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/programs': {
@@ -171,13 +178,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ai-coach': {
-      id: '/ai-coach'
-      path: '/ai-coach'
-      fullPath: '/ai-coach'
-      preLoaderRoute: typeof AiCoachRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -198,11 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AiCoachRoute: AiCoachRoute,
   AuthRoute: AuthRoute,
   NutritionRoute: NutritionRoute,
   PricingRoute: PricingRoute,
   ProgramsRoute: ProgramsRoute,
+  SmartCoachRoute: SmartCoachRoute,
   WorkoutsRoute: WorkoutsRoute,
 }
 export const routeTree = rootRouteImport

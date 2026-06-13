@@ -10,7 +10,7 @@ interface AuthGuardProps {
 export function AuthGuard({
   children,
   title = "Unlock Premium Feature",
-  description = "This page contains premium content. Sign in to access guided workouts, customized nutrition plans, and AI coaching.",
+  description = "This page contains premium content. Sign in to access guided workouts, customized nutrition plans, and smart coaching.",
 }: AuthGuardProps) {
   const { user, loading } = useAuth();
 

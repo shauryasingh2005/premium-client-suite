@@ -12,16 +12,16 @@ import { Section, Stat } from "@/components/Section";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ANYWHERE FITNESS — AI-Powered Fitness & Nutrition" },
+      { title: "ANYWHERE FITNESS — Adaptive Fitness & Nutrition" },
       {
         name: "description",
         content:
-          "500+ guided workouts. Custom AI plans. Integrated nutrition. The all-in-one fitness companion that adapts as you do.",
+          "500+ guided workouts. Custom adaptive plans. Integrated nutrition. The all-in-one fitness companion that adapts as you do.",
       },
       { property: "og:title", content: "ANYWHERE FITNESS — Build Your Best Self" },
       {
         property: "og:description",
-        content: "AI-powered fitness & nutrition, built for every level.",
+        content: "Adaptive fitness & nutrition, built for every level.",
       },
     ],
   }),
@@ -55,7 +55,7 @@ function Home() {
               </span>
             </h1>
             <p className="mt-8 max-w-xl text-lg text-muted-foreground leading-relaxed">
-              ANYWHERE FITNESS is the AI fitness companion that learns from every workout — adapting
+              ANYWHERE FITNESS is the smart fitness companion that learns from every workout — adapting
               plans, nutrition, and recovery to <em className="text-foreground not-italic">your</em>{" "}
               body, schedule, and goals.
             </p>
@@ -63,8 +63,8 @@ function Home() {
               <Link to="/pricing" className="btn-primary">
                 Start free trial
               </Link>
-              <Link to="/ai-coach" className="btn-ghost">
-                How the AI works →
+              <Link to="/smart-coach" className="btn-ghost">
+                How the coaching engine works →
               </Link>
             </div>
             <div className="mt-14 grid grid-cols-3 gap-6 max-w-lg">
@@ -252,7 +252,7 @@ function Home() {
       <section className="border-y border-border bg-surface/30 grain">
         <div className="container-x py-24 md:py-32 grid lg:grid-cols-12 gap-12 items-center relative z-10">
           <div className="lg:col-span-5">
-            <p className="eyebrow">AI coaching engine</p>
+            <p className="eyebrow">Smart coaching engine</p>
             <h2 className="display-lg mt-4">
               A coach that <br />
               rewrites your plan <br />
@@ -263,7 +263,7 @@ function Home() {
               adherence — then ships a fresh plan for the week ahead. No two athletes ever run the
               same program.
             </p>
-            <Link to="/ai-coach" className="btn-primary mt-8">
+            <Link to="/smart-coach" className="btn-primary mt-8">
               Meet the engine
             </Link>
           </div>
@@ -375,7 +375,7 @@ function Home() {
               name: "Rohan K.",
               role: "Gym-goer · Mumbai",
               quote:
-                "Periodisation that actually makes sense. PR’d my deadlift in 6 weeks. The AI knows when to push and when to back off.",
+                "Periodisation that actually makes sense. PR’d my deadlift in 6 weeks. The system knows when to push and when to back off.",
             },
             {
               img: t3,

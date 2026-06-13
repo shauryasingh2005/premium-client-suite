@@ -129,7 +129,7 @@ function ProgramsPage() {
               plan unique to your body. Swap exercises, adjust frequency, confirm — and it syncs
               straight to your calendar.
             </p>
-            <Link to="/ai-coach" className="btn-primary mt-7">
+            <Link to="/smart-coach" className="btn-primary mt-7">
               Generate my plan
             </Link>
           </div>

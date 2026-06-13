@@ -33,8 +33,8 @@ export default defineConfig({
     plugins: [
       sentryVitePlugin({
         authToken: getSentryAuthToken(),
-        org: "premium-client-suite",
-        project: "premium-client-suite",
+        org: "shaurya-singh-1o",
+        project: "react",
       }),
     ],
     build: {

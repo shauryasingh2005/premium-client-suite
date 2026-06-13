@@ -130,7 +130,7 @@ function AboutPage() {
           <Link to="/pricing" className="btn-primary">
             Start free
           </Link>
-          <Link to="/ai-coach" className="btn-ghost">
+          <Link to="/smart-coach" className="btn-ghost">
             See the engine
           </Link>
         </div>
