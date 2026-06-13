@@ -5,7 +5,7 @@
 [![Database](https://img.shields.io/badge/Database-Supabase-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Styling](https://img.shields.io/badge/Styling-Tailwind_CSS_v4-06B6D4?style=for-the-badge&logo=tailwindcss)](https://tailwindcss.com)
 
-**ANYWHERE FITNESS** is a state-of-the-art, AI-powered personal training, nutrition, and recovery platform built for Indian kitchens and modern routines. No generic plans here — our AI engine rewrites programs weekly based on actual biometric progress, sleep patterns, RPE, and meal compliance.
+**ANYWHERE FITNESS** is a state-of-the-art, personalized training, nutrition, and recovery platform built for Indian kitchens and modern routines. No generic plans here — our adaptive engine rewrites programs weekly based on actual biometric progress, sleep patterns, RPE, and meal compliance.
 
 🌐 **Live Demo:** [premium-client-suite.vercel.app](https://premium-client-suite.vercel.app/)
 
@@ -13,7 +13,7 @@
 
 ## ✨ Key Features
 
-- **🧠 Adaptive AI Coaching Engine:** Sunday recalibration analyzing workout adherence, sleep, and rate of perceived exertion (RPE) to dynamically scale volume/reps.
+- **🧠 Adaptive Coaching Engine:** Sunday recalibration analyzing workout adherence, sleep, and rate of perceived exertion (RPE) to dynamically scale volume/reps.
 - **🥗 Integrated Nutrition Suite:** Syncs training output with local Indian ingredient macros, macro-locked meal swaps, and custom grocery list generators.
 - **⚡ Supercharged Tech Stack:** Built on **TanStack Start** for lightning-fast server rendering, instant page transitions, and optimal performance even on standard 4G connections.
 - **🔐 Enterprise-grade Security:** Powered by Supabase with Row Level Security (RLS) policies protecting user profiles, nutrition plans, and workout schedules.
@@ -44,7 +44,7 @@
 ├── src/
 │   ├── routes/          # File-based routing folder (TanStack Router convention)
 │   │   ├── index.tsx    # Landing / Home Page
-│   │   ├── ai-coach.tsx # AI Recalibration view
+│   │   ├── smart-coach.tsx # Smart Recalibration view
 │   │   ├── auth.tsx     # Sign-up & Login
 │   │   ├── pricing.tsx  # Tier configurations
 │   │   └── workouts.tsx # Workout generator
