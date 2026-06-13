@@ -1,10 +1,26 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - tanstackStart, viteReact, tailwindcss, tsConfigPaths, nitro (build-only using cloudflare as a default target),
-//     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
-//     error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
+import fs from "node:fs";
+import path from "node:path";
+
+function getSentryAuthToken() {
+  if (process.env.SENTRY_AUTH_TOKEN) {
+    return process.env.SENTRY_AUTH_TOKEN;
+  }
+  try {
+    const envPath = path.resolve(process.cwd(), ".env");
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, "utf-8");
+      const match = envContent.match(/^SENTRY_AUTH_TOKEN\s*=\s*(.*)$/m);
+      if (match && match[1]) {
+        return match[1].trim().replace(/^['"]|['"]$/g, "");
+      }
+    }
+  } catch (e) {
+    // Ignore
+  }
+  return undefined;
+}
 
 export default defineConfig({
   nitro: true,
@@ -13,4 +29,17 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    plugins: [
+      sentryVitePlugin({
+        authToken: getSentryAuthToken(),
+        org: "premium-client-suite",
+        project: "premium-client-suite",
+      }),
+    ],
+    build: {
+      sourcemap: true,
+    },
+  },
 });
+

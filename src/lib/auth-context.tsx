@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/react";
 import { supabase } from "./supabase";
 
 const AuthContext = createContext<{
@@ -22,6 +23,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      Sentry.setUser({
+        id: user.id,
+        email: user.email,
+        username: user.user_metadata?.full_name || undefined,
+      });
+    } else {
+      Sentry.setUser(null);
+    }
+  }, [user]);
+
 
   useEffect(() => {
     // Check local storage for mock session first
