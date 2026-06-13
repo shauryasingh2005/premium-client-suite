@@ -3,7 +3,8 @@ import { useState, useRef, useEffect } from "react";
 import { PageHeader, Section } from "@/components/Section";
 import { AuthGuard } from "@/components/AuthGuard";
 import { askCoach } from "../lib/chat-server";
-import { Send, MessageSquare, Shield, Info, Sparkles, User, Cpu } from "lucide-react";
+import { LiveCommunity } from "@/components/LiveCommunity";
+import { Send, MessageSquare, Shield, Info, Sparkles, User, Cpu, Users } from "lucide-react";
 
 export const Route = createFileRoute("/smart-coach")({
   head: () => ({
@@ -46,7 +47,7 @@ interface ChatMessage {
 }
 
 function SmartCoachPage() {
-  const [activeTab, setActiveTab] = useState<"overview" | "chat">("chat");
+  const [activeTab, setActiveTab] = useState<"overview" | "chat" | "community">("chat");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
@@ -137,6 +138,16 @@ function SmartCoachPage() {
             <MessageSquare className="h-4 w-4" /> Smart Chatbot
           </button>
           <button
+            onClick={() => setActiveTab("community")}
+            className={`px-6 py-3 text-xs font-mono uppercase tracking-wider rounded-xl border transition flex items-center gap-2 ${
+              activeTab === "community"
+                ? "bg-primary border-primary text-background font-bold"
+                : "border-border bg-surface-2 hover:border-primary/50 text-muted-foreground"
+            }`}
+          >
+            <Users className="h-4 w-4" /> Community Feed
+          </button>
+          <button
             onClick={() => setActiveTab("overview")}
             className={`px-6 py-3 text-xs font-mono uppercase tracking-wider rounded-xl border transition flex items-center gap-2 ${
               activeTab === "overview"
@@ -148,6 +159,12 @@ function SmartCoachPage() {
           </button>
         </div>
       </Section>
+
+      {activeTab === "community" && (
+        <Section className="!pt-0">
+          <LiveCommunity />
+        </Section>
+      )}
 
       {activeTab === "chat" && (
         <Section className="!pt-0">

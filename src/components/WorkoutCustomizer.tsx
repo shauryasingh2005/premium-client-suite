@@ -1,17 +1,39 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../lib/auth-context";
 import { supabase } from "../lib/supabase";
-import { Check, Clipboard, Dumbbell, Flame, Heart, Sparkles, Trophy, Plus, Calendar } from "lucide-react";
+import { SubscriptionModal } from "./SubscriptionModal";
+import {
+  Check,
+  Clipboard,
+  Dumbbell,
+  Flame,
+  Heart,
+  Sparkles,
+  Trophy,
+  Plus,
+  Calendar,
+  BicepsFlexed,
+  ChevronRight,
+  User,
+  ShieldCheck,
+  Zap,
+  CheckCircle,
+  Play,
+  RotateCw
+} from "lucide-react";
 
 export type Regimen =
-  | "Powerlifting"
-  | "Cardio"
-  | "Pehlewani"
-  | "Hyrox"
   | "Hybrid"
-  | "Bodybuilding"
+  | "Powerlifting"
+  | "GymGoer"
   | "Calisthenics"
-  | "Running";
+  | "Dumbbell"
+  | "Cardio"
+  | "Mugdal"
+  | "Pehelwani"
+  | "MMA"
+  | "Power"
+  | "Maintenance";
 
 interface WorkoutExercise {
   name: string;
@@ -19,6 +41,7 @@ interface WorkoutExercise {
   reps: string;
   weight: string;
   notes: string;
+  rest?: string;
 }
 
 interface WeeklyPlan {
@@ -44,14 +67,17 @@ interface ProgressLog {
   prUpdates: { movement: string; value: string }[];
 }
 
-export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { defaultRegimen?: Regimen }) {
-  const [step, setStep] = useState<"profile" | "stats" | "result" | "logs">("profile");
+export function WorkoutCustomizer({ defaultRegimen = "Hybrid" }: { defaultRegimen?: Regimen }) {
+  const [step, setStep] = useState<"splash" | "profile" | "stats" | "result" | "logs">("splash");
 
-  // Profile inputs
+  // Onboarding biometrics
   const [name, setName] = useState("");
+  const [weightInput, setWeightInput] = useState("");
+  const [heightInput, setHeightInput] = useState("");
   const [weight, setWeight] = useState(75);
   const [height, setHeight] = useState(175);
   const [regimen, setRegimen] = useState<Regimen>(defaultRegimen);
+  const [experience, setExperience] = useState<"Beginner" | "Intermediate" | "Advanced">("Intermediate");
 
   // Sync with prop
   useEffect(() => {
@@ -63,47 +89,30 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
   const [dietBudget, setDietBudget] = useState("Standard");
   const [medicalNotes, setMedicalNotes] = useState("");
 
-  // Regimen-specific inputs
-  // Powerlifting
+  // Regimen-specific baseline stats
   const [squatPr, setSquatPr] = useState(100);
   const [benchPr, setBenchPr] = useState(80);
   const [deadliftPr, setDeadliftPr] = useState(120);
-
-  // Bodybuilding
-  const [targetReps, setTargetReps] = useState("8-12");
-  const [experience, setExperience] = useState("Intermediate");
-
-  // Calisthenics
   const [maxPullups, setMaxPullups] = useState(10);
-  const [maxDips, setMaxDips] = useState(12);
   const [maxPushups, setMaxPushups] = useState(25);
-
-  // Running & Cardio
   const [fivekPr, setFivekPr] = useState("25:00");
-  const [weeklyMileage, setWeeklyMileage] = useState(20);
   const [restingHr, setRestingHr] = useState(65);
-  const [cardioPreference, setCardioPreference] = useState("HIIT");
-
-  // Pehlewani
   const [maxDands, setMaxDands] = useState(30);
   const [maxBethaks, setMaxBethaks] = useState(50);
   const [gadaWeight, setGadaWeight] = useState(10);
 
-  // Hyrox
-  const [onekRunTime, setOnekRunTime] = useState("5:00");
-  const [wallBallsPr, setWallBallsPr] = useState(30);
-  const [sledPushLoad, setSledPushLoad] = useState(100);
+  // Subscriptions & Elite intake
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
+  const [eliteIntakeAnswers, setEliteIntakeAnswers] = useState<any>(null);
 
-  // Hybrid
-  const [hybridRatio, setHybridRatio] = useState("50/50");
-
-  // Plan outputs
+  // Outputs
   const [weeklyPlans, setWeeklyPlans] = useState<WeeklyPlan[]>([]);
   const [activeWeek, setActiveWeek] = useState(1);
   const { user } = useAuth();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  // Progress Logging State
+  // Progress Logging & Daily Warrior Checklist
   const [logs, setLogs] = useState<ProgressLog[]>([]);
   const [logDate, setLogDate] = useState(new Date().toISOString().split("T")[0]);
   const [logWeight, setLogWeight] = useState(75);
@@ -114,44 +123,84 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
   const [newPrValue, setNewPrValue] = useState("");
   const [prList, setPrList] = useState<{ movement: string; value: string }[]>([]);
 
-  // Load logs from localStorage
+  // Checklist states (saved daily in localstorage)
+  const [chkHrv, setChkHrv] = useState(false);
+  const [chkMobility, setChkMobility] = useState(false);
+  const [chkTraining, setChkTraining] = useState(false);
+  const [chkMacros, setChkMacros] = useState(false);
+  const [chkSleep, setChkSleep] = useState(false);
+
+  // Load state from localStorage on init
   useEffect(() => {
-    const savedLogs = localStorage.getItem(`fitforge_logs_${user?.id || "guest"}`);
-    if (savedLogs) {
-      setLogs(JSON.parse(savedLogs));
+    const guestKey = user?.id || "guest";
+    const savedLogs = localStorage.getItem(`fitforge_logs_${guestKey}`);
+    if (savedLogs) setLogs(JSON.parse(savedLogs));
+
+    const savedSub = localStorage.getItem(`fitforge_subscribed_${guestKey}`);
+    if (savedSub === "true") setIsSubscribed(true);
+
+    const savedIntake = localStorage.getItem(`fitforge_intake_${guestKey}`);
+    if (savedIntake) setEliteIntakeAnswers(JSON.parse(savedIntake));
+
+    const savedProfile = localStorage.getItem(`fitforge_profile_${guestKey}`);
+    if (savedProfile) {
+      const p = JSON.parse(savedProfile);
+      setName(p.name || "");
+      setWeight(p.weight || 75);
+      setHeight(p.height || 175);
+      setWeightInput(String(p.weight || ""));
+      setHeightInput(String(p.height || ""));
+      setExperience(p.experience || "Intermediate");
+      setStep("result"); // Skip splash if profile exists
     }
   }, [user]);
 
-  const saveWorkout = async () => {
-    if (!user) return;
-    setSaveStatus("saving");
-    try {
-      // First update profile
-      const { error: profileErr } = await supabase.from("profiles").upsert({
-        id: user.id,
-        email: user.email,
-        full_name: name || undefined,
-        weight: weight || undefined,
-        height: height || undefined,
-        regimen: regimen,
-        updated_at: new Date().toISOString(),
-      });
-      if (profileErr) throw profileErr;
+  // Calculate consistency score based on checked boxes
+  const getConsistencyScore = () => {
+    const checks = [chkHrv, chkMobility, chkTraining, chkMacros, chkSleep];
+    const checkedCount = checks.filter(Boolean).length;
+    return Math.round((checkedCount / checks.length) * 100);
+  };
 
-      // Insert/Upsert program to database
-      const { error } = await supabase.from("workouts").insert({
-        user_id: user.id,
-        name: `${regimen} 4-Week Custom Plan`,
-        regimen: regimen,
-        exercises: weeklyPlans as any,
-      });
+  const handleStartOnboarding = () => {
+    setStep("profile");
+  };
 
-      if (error) throw error;
-      setSaveStatus("saved");
-    } catch (err) {
-      console.error("Error saving workout:", err);
-      setSaveStatus("error");
+  const handleProfileSubmit = () => {
+    const wVal = Number(weightInput);
+    const hVal = Number(heightInput);
+
+    if (!weightInput || isNaN(wVal) || wVal <= 0) {
+      alert("Please enter a valid bodyweight in kilograms.");
+      return;
     }
+    if (!heightInput || isNaN(hVal) || hVal <= 0) {
+      alert("Please enter a valid height in centimeters.");
+      return;
+    }
+
+    setWeight(wVal);
+    setHeight(hVal);
+    setLogWeight(wVal);
+
+    // Save profile locally
+    const guestKey = user?.id || "guest";
+    localStorage.setItem(
+      `fitforge_profile_${guestKey}`,
+      JSON.stringify({ name, weight: wVal, height: hVal, experience })
+    );
+
+    setStep("stats");
+  };
+
+  const handleSubscribeSuccess = (intake: any) => {
+    setIsSubscribed(true);
+    setEliteIntakeAnswers(intake);
+    const guestKey = user?.id || "guest";
+    localStorage.setItem(`fitforge_subscribed_${guestKey}`, "true");
+    localStorage.setItem(`fitforge_intake_${guestKey}`, JSON.stringify(intake));
+    alert("Elite Membership Active! Advanced plans are unlocked.");
+    handleCalculate();
   };
 
   const handleLogProgress = () => {
@@ -170,118 +219,122 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
     localStorage.setItem(`fitforge_logs_${user?.id || "guest"}`, JSON.stringify(updated));
     setLogNotes("");
     setPrList([]);
-    alert("Progress logged successfully!");
+    alert("Daily Warrior Log recorded!");
   };
 
-  const addPrUpdate = () => {
-    if (newPrMovement.trim() && newPrValue.trim()) {
-      setPrList([...prList, { movement: newPrMovement, value: newPrValue }]);
-      setNewPrMovement("");
-      setNewPrValue("");
+  const saveWorkout = async () => {
+    if (!user) {
+      alert("Progress saved locally in Guest Mode. Sign in to save to the database.");
+      return;
+    }
+    setSaveStatus("saving");
+    try {
+      await supabase.from("profiles").upsert({
+        id: user.id,
+        email: user.email,
+        full_name: name || undefined,
+        weight: weight,
+        height: height,
+        regimen: regimen,
+        updated_at: new Date().toISOString(),
+      });
+
+      await supabase.from("workouts").insert({
+        user_id: user.id,
+        name: `${regimen} Custom Routine`,
+        regimen: regimen,
+        exercises: weeklyPlans as any,
+      });
+
+      setSaveStatus("saved");
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("error");
     }
   };
 
   const handleCalculate = () => {
-    const weeks: WeeklyPlan[] = [];
+    const plans: WeeklyPlan[] = [];
 
-    // Base diet items adjusted by dietary preference and budget
-    const getDietSlot = (slot: string, weekIndex: number) => {
-      const isLowBudget = dietBudget === "Low-budget";
-      const isHighBudget = dietBudget === "Premium";
-      
+    // Food macros generator
+    const getFoodPlan = (slot: string, weekIndex: number) => {
+      const isLow = dietBudget === "Low-budget";
+      const isPremium = dietBudget === "Premium";
       let food = "";
       let macros = "";
 
-      if (dietaryPref === "Vegan") {
+      if (dietaryPref === "Vegan" || eliteIntakeAnswers?.diet === "Advanced Vegan") {
         if (slot === "Breakfast") {
-          food = isLowBudget ? "Oatmeal with soy milk & bananas" : "Chia pudding with berries, pea protein shake & almonds";
-          macros = "350 kcal | P: 22g, C: 50g, F: 8g";
+          food = isLow ? "Sprouted Moong & peanut butter sandwich + soy milk" : "Organic Tofu scramble with spinach + pea protein isolate shake";
+          macros = "420 kcal | P: 28g, C: 48g, F: 12g";
         } else if (slot === "Lunch") {
-          food = isLowBudget ? "Brown rice, dal makhani (vegan style) & salad" : "Tofu stir-fry with quinoa, broccoli & seeds";
-          macros = "550 kcal | P: 28g, C: 70g, F: 15g";
+          food = isLow ? "Brown rice thali with dense Dal Fry + cucumber salad" : "Tofu quinoa bowl with organic edamame + walnuts";
+          macros = "610 kcal | P: 32g, C: 80g, F: 15g";
         } else if (slot === "Snacks") {
-          food = isLowBudget ? "Roasted chickpeas (Chana)" : "Protein bar (plant-based) & walnuts";
-          macros = "200 kcal | P: 12g, C: 25g, F: 6g";
+          food = "Roasted Chana + pumpkin seeds";
+          macros = "200 kcal | P: 14g, C: 22g, F: 6g";
         } else {
-          food = isLowBudget ? "Roti, mixed vegetable curry & steamed edamame" : "Tempeh bowls with avocado, brown rice & spinach";
-          macros = "480 kcal | P: 26g, C: 45g, F: 18g";
+          food = isLow ? "Besan Chilla with sprouted Dal + mix vegetable sabzi" : "Tempeh stir-fry with broccoli, seeds & avocado";
+          macros = "510 kcal | P: 26g, C: 50g, F: 18g";
         }
-      } else if (dietaryPref === "Carnivore") {
+      } else if (dietaryPref === "Carnivore" || eliteIntakeAnswers?.diet === "Advanced Carnivore") {
         if (slot === "Breakfast") {
-          food = isLowBudget ? "4 whole eggs cooked in butter" : "Ribeye steak & 3 eggs scrambled in beef tallow";
-          macros = "520 kcal | P: 36g, C: 2g, F: 40g";
+          food = isLow ? "4 Whole eggs scrambled in butter" : "Aged Ribeye steak + 3 eggs cooked in tallow";
+          macros = "550 kcal | P: 40g, C: 0g, F: 42g";
         } else if (slot === "Lunch") {
-          food = isLowBudget ? "Chicken thighs with butter" : "Ground beef patties (80/20) with butter & bone broth";
-          macros = "650 kcal | P: 45g, C: 0g, F: 52g";
+          food = isLow ? "Boiled chicken legs in ghee" : "Mutton chops + scrambled brain or bone marrow thali";
+          macros = "680 kcal | P: 48g, C: 0g, F: 54g";
         } else if (slot === "Snacks") {
-          food = isLowBudget ? "Hard-boiled eggs" : "Beef jerky & pork rinds";
-          macros = "180 kcal | P: 18g, C: 0g, F: 12g";
+          food = "Beef or lamb jerky cubes";
+          macros = "180 kcal | P: 20g, C: 0g, F: 10g";
         } else {
-          food = isLowBudget ? "Minced mutton or pork chops" : "Salmon fillets cooked in ghee or buttered steak";
-          macros = "580 kcal | P: 48g, C: 0g, F: 42g";
-        }
-      } else if (dietaryPref === "Keto") {
-        if (slot === "Breakfast") {
-          food = isLowBudget ? "Scrambled eggs with cheese & spinach" : "Avocado, bulletproof coffee, eggs & heavy cream";
-          macros = "450 kcal | P: 25g, C: 4g, F: 38g";
-        } else if (slot === "Lunch") {
-          food = isLowBudget ? "Paneer bhurji or chicken stir-fry with ghee" : "Grilled salmon with asparagus & butter sauce";
-          macros = "580 kcal | P: 35g, C: 6g, F: 48g";
-        } else if (slot === "Snacks") {
-          food = isLowBudget ? "Salted peanuts or almonds" : "Macadamia nuts & string cheese";
-          macros = "220 kcal | P: 8g, C: 5g, F: 20g";
-        } else {
-          food = isLowBudget ? "Palak paneer or butter chicken (no rice/roti)" : "Heavy cream mutton curry with broccoli rice";
-          macros = "500 kcal | P: 38g, C: 7g, F: 38g";
+          food = isLow ? "Fatty fish steak in butter" : "Salmon fillet + butter pan-seared chicken thighs";
+          macros = "590 kcal | P: 46g, C: 0g, F: 45g";
         }
       } else {
-        // Balanced/Vegetarian/Standard
+        // Balanced / Vegetarian thali combinations
         if (slot === "Breakfast") {
-          food = isLowBudget ? "Poha with peanuts & double boiled eggs/sprouted moong" : "Paneer stuffed paratha, curd & whey protein";
-          macros = "420 kcal | P: 24g, C: 55g, F: 12g";
+          food = "Besan chilla with curd / Double boiled eggs with sprouted moong";
+          macros = "450 kcal | P: 25g, C: 45g, F: 15g";
         } else if (slot === "Lunch") {
-          food = isLowBudget ? "2 Rotis, dal fry, mix sabzi & curd" : "Chicken breast/Tofu breast rice bowl with broccoli & avocado";
-          macros = "600 kcal | P: 35g, C: 75g, F: 14g";
+          food = "Brown Rice + Dal + Curd (EAA matched complete thali profile)";
+          macros = "620 kcal | P: 30g, C: 85g, F: 12g";
         } else if (slot === "Snacks") {
-          food = isLowBudget ? "Roasted Chana & tea/coffee" : "Whey protein shake, almonds & an apple";
-          macros = "210 kcal | P: 15g, C: 22g, F: 7g";
+          food = "Whey protein shake + handful of almonds";
+          macros = "240 kcal | P: 26g, C: 10g, F: 8g";
         } else {
-          food = isLowBudget ? "Roti, egg curry/paneer curry & cucumber salad" : "Grilled fish/mutton with sweet potato & green beans";
-          macros = "510 kcal | P: 32g, C: 50g, F: 16g";
+          food = "Roti + paneer/egg curry + cucumber salad";
+          macros = "530 kcal | P: 32g, C: 55g, F: 16g";
         }
-      }
-
-      // Add variation based on week index
-      if (weekIndex > 1) {
-        food += ` (Calibrated for progressive loading +${10 * weekIndex}g Protein)`;
       }
 
       return { mealSlot: slot, food, macros };
     };
 
-    // Build plans for 4 weeks
+    // Calculate workouts based on selected regimen with progressive overload and deload week
     for (let w = 1; w <= 4; w++) {
       const workouts: WeeklyPlan["workouts"] = [];
-      const intensityFactor = 0.70 + w * 0.03; // Progressive overload factor
+      const isDeload = w === 4;
+      const loadFactor = isDeload ? 0.6 : 0.7 + w * 0.05;
 
       if (regimen === "Powerlifting") {
         workouts.push({
           day: "Monday",
-          focus: "Squat Intensity + Bench Volume",
+          focus: "Squat Volume & Bench Setup",
           exercises: [
             {
-              name: "Competition Squat",
-              sets: 4,
-              reps: `${6 - w}`,
-              weight: `${Math.round(squatPr * intensityFactor)} kg`,
-              notes: `Week ${w} overload: Rest 3-5 mins between sets. Maintain upright chest.`,
+              name: "Back Squat",
+              sets: isDeload ? 2 : 4,
+              reps: isDeload ? "8" : "5",
+              weight: `${Math.round(squatPr * loadFactor)} kg`,
+              notes: isDeload ? "Deload Week: Focus on active recovery." : `Overload: Target 1RM percentage. Rest 3 mins.`,
             },
             {
-              name: "Pause Bench Press",
+              name: "Bench Press",
               sets: 3,
               reps: "8",
               weight: `${Math.round(benchPr * 0.65)} kg`,
-              notes: "Pause 1 second on chest before press.",
+              notes: "Pause 1s on chest.",
             },
           ],
         });
@@ -290,443 +343,332 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
           focus: "Deadlift Intensity",
           exercises: [
             {
-              name: "Conventional/Sumo Deadlift",
-              sets: 3,
-              reps: "5",
-              weight: `${Math.round(deadliftPr * (intensityFactor - 0.02))} kg`,
-              notes: "Maintain flat back, lock out hips fully.",
+              name: "Barbell Deadlift",
+              sets: isDeload ? 2 : 3,
+              reps: "3",
+              weight: `${Math.round(deadliftPr * loadFactor)} kg`,
+              notes: "Brace lats, pull raw.",
             },
           ],
         });
         workouts.push({
           day: "Friday",
-          focus: "Bench Intensity + Squat Volume",
+          focus: "Bench Press Intensity",
           exercises: [
             {
-              name: "Competition Bench Press",
-              sets: 4,
-              reps: `${6 - w}`,
-              weight: `${Math.round(benchPr * intensityFactor)} kg`,
-              notes: "Retract scapula, leg drive.",
-            },
-            {
-              name: "Safety Bar Squat or Leg Press",
-              sets: 3,
-              reps: "10",
-              weight: "Moderate",
-              notes: "Focused quad hypertrophy.",
+              name: "Bench Press",
+              sets: isDeload ? 2 : 4,
+              reps: "3",
+              weight: `${Math.round(benchPr * loadFactor)} kg`,
+              notes: "Drive legs, pull shoulder blades.",
             },
           ],
         });
-      } else if (regimen === "Cardio") {
-        const hertzMax = 220 - (25); // estimate age 25
-        const targetBpm = Math.round((hertzMax - restingHr) * (0.6 + w * 0.05) + restingHr);
-        
+      } else if (regimen === "Pehelwani") {
         workouts.push({
           day: "Monday",
-          focus: "HIIT Intervals",
+          focus: "Akhada Vardi (Hindu movements)",
           exercises: [
             {
-              name: "Tabata Sprint Intervals",
-              sets: 4,
-              reps: "8 rounds (20s on / 10s off)",
+              name: "Hindu Pushups (Dand)",
+              sets: 5,
+              reps: `${Math.round((maxDands + w * 5) * (isDeload ? 0.6 : 1))}`,
               weight: "Bodyweight",
-              notes: `Keep heart rate close to ${targetBpm} bpm on active sprints. Row, run, or bike.`,
+              notes: "Engage lower back cobra stretches.",
             },
-          ],
-        });
-        workouts.push({
-          day: "Wednesday",
-          focus: "LISS Endurance",
-          exercises: [
-            {
-              name: "Steady State Cardio (Zone 2)",
-              sets: 1,
-              reps: `${30 + w * 5} mins`,
-              weight: "Cardio",
-              notes: `Steady pace, easy breathing. Target HR: ~${Math.round(targetBpm * 0.75)} bpm.`,
-            },
-          ],
-        });
-        workouts.push({
-          day: "Friday",
-          focus: "Metabolic Circuit",
-          exercises: [
-            {
-              name: "Kettlebell swings + Burpees + Jump Ropes",
-              sets: 3,
-              reps: "12-15 reps each",
-              weight: "Light",
-              notes: "Move continuously, 90 seconds rest between sets.",
-            },
-          ],
-        });
-      } else if (regimen === "Pehlewani") {
-        const repOverload = w * 5;
-        workouts.push({
-          day: "Monday",
-          focus: "Gada Power & Chest",
-          exercises: [
             {
               name: "Gada Swing (Macebell)",
               sets: 4,
-              reps: `${20 + repOverload}`,
+              reps: "20 swings per side",
               weight: `${gadaWeight} kg`,
-              notes: "Full shoulder rotation. Engage your core fully.",
-            },
-            {
-              name: "Hindu Pushups (Dand)",
-              sets: 4,
-              reps: `${Math.round(maxDands * 0.7) + w * 2}`,
-              weight: "Bodyweight",
-              notes: "Swoop down and push up into cobra position.",
+              notes: "Full shoulder rotation.",
             },
           ],
         });
         workouts.push({
           day: "Wednesday",
-          focus: "Leg Stamina (Bethak)",
+          focus: "Leg Endurance (Bethak)",
           exercises: [
             {
               name: "Hindu Squats (Bethak)",
               sets: 5,
-              reps: `${Math.round(maxBethaks * 0.8) + w * 5}`,
+              reps: `${Math.round((maxBethaks + w * 10) * (isDeload ? 0.6 : 1))}`,
               weight: "Bodyweight",
-              notes: "Fast, rhythmic squats on toes with arm sweeps.",
+              notes: "Rhythmic squatting. Keep heels off the ground.",
             },
           ],
         });
         workouts.push({
           day: "Friday",
-          focus: "Jodi Power & Wrestling Stamina",
+          focus: "Jodi & Wrestling Entry",
           exercises: [
             {
-              name: "Jodi Swing (Indian Clubs)",
+              name: "Circular Jodi Swings",
               sets: 4,
-              reps: "15 swings per arm",
+              reps: "15 swings",
               weight: "Moderate",
-              notes: "Builds rotational wrist and grip strength.",
-            },
-            {
-              name: "Bridge & Core neck rolls",
-              sets: 3,
-              reps: "2 mins hold",
-              weight: "Bodyweight",
-              notes: "Wrestler bridge posture to build neck strength.",
+              notes: "Indian club swings for wrist mobility.",
             },
           ],
         });
-      } else if (regimen === "Hyrox") {
+      } else if (regimen === "Mugdal") {
         workouts.push({
-          day: "Monday",
-          focus: "Hyrox Run & Sled",
+          day: "Tuesday",
+          focus: "Rotational Mobility & Grip",
           exercises: [
             {
-              name: "Interval Run",
-              sets: 3,
-              reps: "1 km run",
-              weight: `${onekRunTime} pace`,
-              notes: "Focus on maintaining even splits.",
-            },
-            {
-              name: "Sled Push",
-              sets: 4,
-              reps: "50m",
-              weight: `${sledPushLoad + w * 10} kg`,
-              notes: "Drive low with legs.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Wednesday",
-          focus: "Engine Capacity",
-          exercises: [
-            {
-              name: "SkiErg Interval",
+              name: "Circular Mugdal Swings",
               sets: 5,
-              reps: "500m",
-              weight: "Medium",
-              notes: "Rest 1 min between sets.",
+              reps: "25",
+              weight: `${Math.round(weight * 0.1)} kg (Calculated)`,
+              notes: "Keep posture upright. Control the centrifugal force.",
             },
             {
-              name: "Burpee Broad Jumps",
-              sets: 3,
-              reps: "80m",
-              weight: "Bodyweight",
-              notes: "Broad jump immediately upon landing burpee.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Friday",
-          focus: "Wall Balls & Sled Pull",
-          exercises: [
-            {
-              name: "Wall Balls",
+              name: "Grip Squeeze Rotations",
               sets: 4,
-              reps: `${wallBallsPr + w * 3}`,
-              weight: "9 kg (20 lb)",
-              notes: "Throw to 10-foot target. Deep squat every rep.",
-            },
-            {
-              name: "Farmers Carry",
-              sets: 3,
-              reps: "100m",
-              weight: "Heavy",
-              notes: "Keep chest tall, short fast steps.",
+              reps: "15",
+              weight: "Light",
+              notes: "Build forearm stability.",
             },
           ],
         });
       } else if (regimen === "Hybrid") {
         workouts.push({
           day: "Monday",
-          focus: "Heavy Compound Lift",
+          focus: "Heavy Squat & Core",
           exercises: [
             {
-              name: "Back Squat",
+              name: "Barbell Back Squat",
               sets: 4,
-              reps: "5",
-              weight: `${Math.round(squatPr * (0.7 + w * 0.02))} kg`,
-              notes: "High tension, full powerlifting range.",
+              reps: "6",
+              weight: `${Math.round(weight * 1.2)} kg (Calculated)`,
+              notes: "1.2x Bodyweight loading target.",
             },
+          ],
+        });
+        workouts.push({
+          day: "Wednesday",
+          focus: "Aerobic Capacity",
+          exercises: [
             {
-              name: "Overhead Barbell Press",
+              name: "Zone 2 LISS Run",
+              sets: 1,
+              reps: `${isDeload ? "30" : 45 + w * 5} mins`,
+              weight: "Cardio",
+              notes: "Keep heart rate low. Conversational pace.",
+            },
+          ],
+        });
+        workouts.push({
+          day: "Friday",
+          focus: "Overhead Pressing",
+          exercises: [
+            {
+              name: "Barbell Overhead Press",
               sets: 3,
               reps: "8",
-              weight: "Moderate",
-              notes: "Keep spine stable, brace glutes.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Wednesday",
-          focus: "Endurance Run",
-          exercises: [
-            {
-              name: "Zone 2 Long Run",
-              sets: 1,
-              reps: `${45 + w * 5} mins`,
-              weight: "Aerobic",
-              notes: "Keep heart rate low. Should be able to hold a full conversation.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Friday",
-          focus: "Deadlift & Work Capacity",
-          exercises: [
-            {
-              name: "Deadlift",
-              sets: 3,
-              reps: "5",
-              weight: `${Math.round(deadliftPr * (0.7 + w * 0.02))} kg`,
-              notes: "Pull raw without straps.",
-            },
-            {
-              name: "Tempo Run intervals",
-              sets: 4,
-              reps: "800m",
-              weight: "High Pace",
-              notes: "Sprint fast with 90s rest.",
-            },
-          ],
-        });
-      } else if (regimen === "Bodybuilding") {
-        const isAdvanced = experience === "Advanced";
-        const setMultiplier = isAdvanced ? 4 : 3;
-        workouts.push({
-          day: "Monday",
-          focus: "Push (Chest, Shoulders, Triceps)",
-          exercises: [
-            {
-              name: "Incline Dumbbell Press",
-              sets: setMultiplier,
-              reps: targetReps,
-              weight: "Moderate-Heavy",
-              notes: "Focus on upper chest squeeze.",
-            },
-            {
-              name: "Dumbbell Lateral Raise",
-              sets: 4,
-              reps: "12-15",
-              weight: "Light",
-              notes: "Control the eccentric.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Wednesday",
-          focus: "Pull (Back, Biceps)",
-          exercises: [
-            {
-              name: "Lat Pulldown (Wide)",
-              sets: setMultiplier,
-              reps: targetReps,
-              weight: "Moderate",
-              notes: "Squeeze lats at the bottom.",
-            },
-            {
-              name: "Incline Hammer Curl",
-              sets: 3,
-              reps: "10-12",
-              weight: "Moderate",
-              notes: "Target brachialis and forearm.",
-            },
-          ],
-        });
-        workouts.push({
-          day: "Friday",
-          focus: "Legs (Quads, Hamstrings, Calves)",
-          exercises: [
-            {
-              name: "Bulgarian Split Squat",
-              sets: 3,
-              reps: "10-12",
-              weight: "Moderate",
-              notes: "Elevate back leg, go deep.",
-            },
-            {
-              name: "Romanian Deadlift",
-              sets: 3,
-              reps: "10",
-              weight: "Heavy-Moderate",
-              notes: "Hinge at hips, stretch hamstrings.",
+              weight: `${Math.round(weight * 0.6)} kg (Calculated)`,
+              notes: "0.6x Bodyweight loading target.",
             },
           ],
         });
       } else if (regimen === "Calisthenics") {
         workouts.push({
           day: "Monday",
-          focus: "Upper Body Pull",
+          focus: "Upper Body Pulling",
           exercises: [
             {
               name: "Strict Pull-ups",
               sets: 4,
-              reps: `${Math.max(2, Math.round(maxPullups * 0.7))}`,
+              reps: `${Math.round(maxPullups * loadFactor)}`,
               weight: "Bodyweight",
-              notes: "Dead hang to chin-over-bar.",
+              notes: "Control descent, chin above bar.",
             },
           ],
         });
         workouts.push({
           day: "Wednesday",
-          focus: "Upper Body Push",
+          focus: "Upper Body Pushing",
           exercises: [
             {
               name: "Parallel Bar Dips",
               sets: 4,
-              reps: `${Math.max(2, Math.round(maxDips * 0.75))}`,
+              reps: "10",
               weight: "Bodyweight",
               notes: "Go down to 90 degrees.",
             },
             {
               name: "Diamond Pushups",
               sets: 3,
-              reps: `${Math.max(5, Math.round(maxPushups * 0.7))}`,
+              reps: "15",
               weight: "Bodyweight",
-              notes: "Focus on triceps and inner chest.",
+              notes: "Keep hands close in diamond shape.",
             },
           ],
         });
         workouts.push({
           day: "Friday",
-          focus: "Core & Skills",
+          focus: "Calisthenics Core",
           exercises: [
             {
               name: "Hanging Leg Raises",
               sets: 3,
-              reps: "8-10",
+              reps: "12",
               weight: "Bodyweight",
-              notes: "No swinging. Touch toes to bar if possible.",
+              notes: "Strict form, no swinging.",
             },
           ],
         });
-      } else if (regimen === "Running") {
+      } else if (regimen === "MMA") {
         workouts.push({
           day: "Monday",
-          focus: "Interval Speedwork",
+          focus: "Striking Round Simulation",
           exercises: [
             {
-              name: "Threshold Interval Run",
-              sets: 4,
-              reps: "1000m",
-              weight: "5k Pace",
-              notes: `Target Pace: ${fivekPr} pace. 2 mins recovery walk between sets.`,
+              name: "Shadowboxing / Heavy Bag",
+              sets: 3,
+              reps: "5 min rounds",
+              weight: "Aerobic/Anaerobic",
+              notes: "Work striking combinations. 1 min rest between rounds.",
             },
           ],
         });
         workouts.push({
           day: "Wednesday",
-          focus: "Recovery Run & Single-Leg Strength",
+          focus: "Takedown Drills",
           exercises: [
             {
-              name: "Easy Recovery Run",
-              sets: 1,
-              reps: "30 mins",
-              weight: "Cardio",
-              notes: "Very easy conversation pace.",
-            },
-            {
-              name: "Single-Leg Glute Bridges",
+              name: "Takedown Entry Drills",
               sets: 3,
-              reps: "12 per leg",
-              weight: "Bodyweight",
-              notes: "Prevents runner's knee.",
+              reps: "5 min rounds",
+              weight: "Grappling",
+              notes: "Double leg and single leg entries.",
             },
           ],
         });
         workouts.push({
           day: "Friday",
-          focus: "Long Run Volume",
+          focus: "MMA Scrambles",
           exercises: [
             {
-              name: "Weekly Long Run",
+              name: "Scramble & Clinch Work",
+              sets: 2,
+              reps: "5 min rounds",
+              weight: "Anaerobic",
+              notes: "Underhook drills, cage walks.",
+            },
+          ],
+        });
+      } else if (regimen === "Power") {
+        workouts.push({
+          day: "Monday",
+          focus: "Contrast Contrast PAP",
+          exercises: [
+            {
+              name: "Back Squat (@90% max)",
+              sets: 3,
+              reps: "3",
+              weight: `${Math.round(weight * 1.2)} kg (Calculated)`,
+              notes: "CNS priming. Move into jumps in 10s.",
+            },
+            {
+              name: "Squat Jumps",
+              sets: 3,
+              reps: "3",
+              weight: "Bodyweight",
+              notes: "Explode up immediately.",
+            },
+          ],
+        });
+      } else if (regimen === "Dumbbell") {
+        workouts.push({
+          day: "Monday",
+          focus: "Unilateral Strength",
+          exercises: [
+            {
+              name: "Dumbbell Goblet Squat",
+              sets: 4,
+              reps: "12",
+              weight: `${Math.round(weight * 0.4)} kg (Calculated)`,
+              notes: "Keep chest upright. Hold DB under chin.",
+            },
+            {
+              name: "Unilateral DB Shoulder Press",
+              sets: 3,
+              reps: "10 per side",
+              weight: `${Math.round(weight * 0.2)} kg (Calculated)`,
+              notes: "Corrects bilateral shoulder imbalances.",
+            },
+          ],
+        });
+      } else {
+        // GymGoer & Maintenance & Cardio
+        workouts.push({
+          day: "Monday",
+          focus: "LISS Cardio / Maintenance Split",
+          exercises: [
+            {
+              name: "Steady State Cardio (Zone 2)",
               sets: 1,
-              reps: `${weeklyMileage * 0.4 + w * 2} km`,
-              weight: "Steady",
-              notes: "Build cardiovascular volume slowly.",
+              reps: "30 mins",
+              weight: "Cardio",
+              notes: "Conversational breathing. Target HR ~125 bpm.",
             },
           ],
         });
       }
 
-      // 4 meals per week
-      const diet = [
-        getDietSlot("Breakfast", w),
-        getDietSlot("Lunch", w),
-        getDietSlot("Snacks", w),
-        getDietSlot("Dinner", w),
-      ];
-
-      weeks.push({
+      plans.push({
         week: w,
         workouts,
-        diet,
+        diet: [
+          getFoodPlan("Breakfast", w),
+          getFoodPlan("Lunch", w),
+          getFoodPlan("Snacks", w),
+          getFoodPlan("Dinner", w),
+        ],
       });
     }
 
-    setWeeklyPlans(weeks);
+    setWeeklyPlans(plans);
     setStep("result");
   };
 
   return (
     <div className="card-surface p-6 md:p-10 max-w-4xl mx-auto border-primary/20 bg-surface/80 backdrop-blur-md">
+      {/* SUBSCRIPTION MODAL */}
+      <SubscriptionModal
+        isOpen={subscriptionModalOpen}
+        onClose={() => setSubscriptionModalOpen(false)}
+        onSuccess={handleSubscribeSuccess}
+      />
+
       {/* TABS HEADER */}
-      <div className="flex gap-2 border-b border-border pb-4 mb-6">
+      <div className="flex gap-2 border-b border-border pb-4 mb-6 overflow-x-auto">
+        <button
+          onClick={() => setStep("splash")}
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition whitespace-nowrap ${
+            step === "splash"
+              ? "bg-primary border-primary text-background font-bold"
+              : "border-border hover:border-primary/50 text-muted-foreground"
+          }`}
+        >
+          Welcome
+        </button>
         <button
           onClick={() => setStep("profile")}
-          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition ${
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition whitespace-nowrap ${
             step === "profile" || step === "stats"
               ? "bg-primary border-primary text-background font-bold"
               : "border-border hover:border-primary/50 text-muted-foreground"
           }`}
         >
-          1. Assessment Form
+          1. Biometrics & Onboarding
         </button>
         <button
           disabled={weeklyPlans.length === 0}
           onClick={() => setStep("result")}
-          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition ${
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition whitespace-nowrap ${
             weeklyPlans.length === 0 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
           } ${
             step === "result"
@@ -734,34 +676,74 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
               : "border-border hover:border-primary/50 text-muted-foreground"
           }`}
         >
-          2. Generated 4-Week Plan
+          2. Weekly Schedule
         </button>
         <button
           onClick={() => setStep("logs")}
-          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition ${
+          className={`px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition whitespace-nowrap ${
             step === "logs"
               ? "bg-primary border-primary text-background font-bold"
               : "border-border hover:border-primary/50 text-muted-foreground"
           }`}
         >
-          3. Progress Log Tracker
+          3. Daily Warrior OS
+        </button>
+
+        {/* SUBSCRIPTION INDICATOR */}
+        <button
+          onClick={() => {
+            if (!isSubscribed) setSubscriptionModalOpen(true);
+          }}
+          className={`ml-auto px-4 py-2 text-xs font-mono uppercase tracking-wider rounded-lg border transition flex items-center gap-1.5 whitespace-nowrap ${
+            isSubscribed
+              ? "bg-green-600/10 border-green-600 text-green-500 font-bold"
+              : "bg-ember/10 border-ember text-ember font-bold hover:bg-ember/20"
+          }`}
+        >
+          <Zap className="h-4 w-4" /> {isSubscribed ? "Elite Active" : "Upgrade to Elite"}
         </button>
       </div>
+
+      {step === "splash" && (
+        <div className="text-center py-12 space-y-8 animate-in zoom-in-95 duration-500">
+          <div className="w-24 h-24 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(59,130,246,0.3)] border border-primary/20 relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-xl" />
+            <BicepsFlexed className="w-12 h-12 text-primary relative z-10" />
+          </div>
+
+          <div className="space-y-3">
+            <h1 className="font-display font-black text-4xl md:text-6xl uppercase tracking-tighter text-foreground">
+              Athlete <span className="text-primary">Compass</span>
+            </h1>
+            <p className="text-sm text-muted-foreground uppercase tracking-widest max-w-sm mx-auto">
+              Your Ultimate Training OS
+            </p>
+          </div>
+
+          <button
+            onClick={handleStartOnboarding}
+            className="btn-primary inline-flex items-center gap-2 group cursor-pointer"
+          >
+            Start Journey
+            <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+          </button>
+        </div>
+      )}
 
       {step === "profile" && (
         <div>
           <h3 className="display-md text-primary flex items-center gap-2">
-            <Sparkles className="h-5 w-5" /> Tell us about yourself
+            <Sparkles className="h-5 w-5" /> Athlete Profiling
           </h3>
           <p className="text-sm text-muted-foreground mt-2 mb-6">
-            Configure your lifestyle, budget, dietary choice and fitness regimen goals.
+            Input your parameters. Suggestion ratios & macros will dynamically scale to your bodyweight.
           </p>
 
           <div className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Your Name
+                  Name / Call Sign
                 </label>
                 <input
                   type="text"
@@ -774,184 +756,17 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
 
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Regimen Focus
-                </label>
-                <select
-                  value={regimen}
-                  onChange={(e) => setRegimen(e.target.value as Regimen)}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                >
-                  <option value="Powerlifting">Powerlifting</option>
-                  <option value="Cardio">Cardio & HIIT</option>
-                  <option value="Pehlewani">Pehlewani (Traditional Indian)</option>
-                  <option value="Hyrox">Hyrox Fitness Racing</option>
-                  <option value="Hybrid">Hybrid Athlete</option>
-                  <option value="Bodybuilding">Bodybuilding</option>
-                  <option value="Calisthenics">Calisthenics</option>
-                  <option value="Running">Running & Athletics</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  value={weight}
-                  onChange={(e) => setWeight(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Height (cm)
-                </label>
-                <input
-                  type="number"
-                  value={height}
-                  onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-            </div>
-
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Dietary Preference
-                </label>
-                <select
-                  value={dietaryPref}
-                  onChange={(e) => setDietaryPref(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                >
-                  <option value="Balanced">Balanced (Vegetarian/Non-veg)</option>
-                  <option value="Vegan">Vegan (Plant-Based)</option>
-                  <option value="Vegetarian">Strict Vegetarian</option>
-                  <option value="Carnivore">Carnivore Diet</option>
-                  <option value="Keto">Ketogenic (Keto)</option>
-                  <option value="Intermittent">Intermittent Fasting Plan</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Dietary Budget / Expense Level
-                </label>
-                <select
-                  value={dietBudget}
-                  onChange={(e) => setDietBudget(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                >
-                  <option value="Low-budget">Low Budget (Staples & Local Produce)</option>
-                  <option value="Standard">Standard (Includes basic health supplements)</option>
-                  <option value="Premium">Premium (Imported goods, supplements & organic)</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                Medical Notes / Injuries / Allergies (e.g. Lactose Intolerance, PCOS)
-              </label>
-              <textarea
-                value={medicalNotes}
-                onChange={(e) => setMedicalNotes(e.target.value)}
-                placeholder="No injuries, lactose intolerant etc."
-                className="w-full h-20 bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground resize-none"
-              />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setStep("stats")}
-            className="btn-primary w-full mt-8"
-          >
-            Next: Enter Regimen Stats →
-          </button>
-        </div>
-      )}
-
-      {step === "stats" && (
-        <div>
-          <h3 className="display-md text-primary flex items-center gap-2">
-            <Dumbbell className="h-5 w-5" /> Regimen Stats ({regimen})
-          </h3>
-          <p className="text-sm text-muted-foreground mt-2 mb-6">
-            Input your specific PRs and thresholds so we can custom-program weights and volumes.
-          </p>
-
-          {regimen === "Powerlifting" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Current Squat 1RM (kg)
-                </label>
-                <input
-                  type="number"
-                  value={squatPr}
-                  onChange={(e) => setSquatPr(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Current Bench Press 1RM (kg)
-                </label>
-                <input
-                  type="number"
-                  value={benchPr}
-                  onChange={(e) => setBenchPr(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Current Deadlift 1RM (kg)
-                </label>
-                <input
-                  type="number"
-                  value={deadliftPr}
-                  onChange={(e) => setDeadliftPr(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-            </div>
-          )}
-
-          {regimen === "Bodybuilding" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Preferred Target Reps
-                </label>
-                <select
-                  value={targetReps}
-                  onChange={(e) => setTargetReps(e.target.value)}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                >
-                  <option value="6-8">6 - 8 reps (Strength & Hypertrophy)</option>
-                  <option value="8-12">8 - 12 reps (Classical Hypertrophy)</option>
-                  <option value="12-15">12 - 15 reps (Pump & Endurance)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Experience Level
+                  Experience Tier
                 </label>
                 <div className="flex gap-2">
                   {["Beginner", "Intermediate", "Advanced"].map((exp) => (
                     <button
                       key={exp}
                       type="button"
-                      onClick={() => setExperience(exp)}
-                      className={`flex-1 text-xs py-3 rounded-lg border transition ${
+                      onClick={() => setExperience(exp as any)}
+                      className={`flex-1 text-[10px] uppercase font-mono py-3.5 rounded-lg border transition ${
                         experience === exp
-                          ? "bg-primary border-primary text-background font-semibold"
+                          ? "bg-primary border-primary text-background font-bold"
                           : "border-border bg-surface-2 hover:border-primary/50 text-muted-foreground"
                       }`}
                     >
@@ -961,271 +776,242 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
                 </div>
               </div>
             </div>
-          )}
 
-          {regimen === "Calisthenics" && (
-            <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Max Consecutive Pull-ups
+                  Bodyweight (kg)
                 </label>
                 <input
                   type="number"
-                  value={maxPullups}
-                  onChange={(e) => setMaxPullups(Number(e.target.value))}
+                  placeholder="e.g. 75"
+                  value={weightInput}
+                  onChange={(e) => setWeightInput(e.target.value)}
                   className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
                 />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Max Consecutive Dips
+                  Height (cm)
                 </label>
                 <input
                   type="number"
-                  value={maxDips}
-                  onChange={(e) => setMaxDips(Number(e.target.value))}
-                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Max Consecutive Push-ups
-                </label>
-                <input
-                  type="number"
-                  value={maxPushups}
-                  onChange={(e) => setMaxPushups(Number(e.target.value))}
+                  placeholder="e.g. 175"
+                  value={heightInput}
+                  onChange={(e) => setHeightInput(e.target.value)}
                   className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
                 />
               </div>
             </div>
-          )}
 
-          {regimen === "Running" && (
-            <div className="space-y-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Current 5K PR (MM:SS)
+                  Regimen Target
                 </label>
-                <input
-                  type="text"
-                  value={fivekPr}
-                  onChange={(e) => setFivekPr(e.target.value)}
-                  placeholder="e.g. 24:30"
+                <select
+                  value={regimen}
+                  onChange={(e) => setRegimen(e.target.value as Regimen)}
                   className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
+                >
+                  <option value="Hybrid">Hybrid Athlete</option>
+                  <option value="Powerlifting">Powerlifting</option>
+                  <option value="GymGoer">General Gym Goer</option>
+                  <option value="Calisthenics">Calisthenics</option>
+                  <option value="Dumbbell">Dumbbell Training</option>
+                  <option value="Cardio">Cardio & HIIT</option>
+                  <option value="Mugdal">Mugdal Training</option>
+                  <option value="Pehelwani">Pehelwani Wrestling</option>
+                  <option value="MMA">MMA Readiness</option>
+                  <option value="Power">Power Training</option>
+                  <option value="Maintenance">Basic Maintenance</option>
+                </select>
               </div>
+
               <div>
                 <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                  Weekly Running Volume (km)
+                  Diet Choice
                 </label>
-                <input
-                  type="number"
-                  value={weeklyMileage}
-                  onChange={(e) => setWeeklyMileage(Number(e.target.value))}
+                <select
+                  value={dietaryPref}
+                  onChange={(e) => setDietaryPref(e.target.value)}
                   className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                />
+                >
+                  <option value="Balanced">Balanced</option>
+                  <option value="Vegan">Vegan (Plant-Based)</option>
+                  <option value="Carnivore">Carnivore Diet</option>
+                  <option value="Keto">Ketogenic (Keto)</option>
+                  <option value="Intermittent">Intermittent Fasting</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                  Diet Budget
+                </label>
+                <select
+                  value={dietBudget}
+                  onChange={(e) => setDietBudget(e.target.value)}
+                  className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
+                >
+                  <option value="Low-budget">Low Budget (Staples)</option>
+                  <option value="Standard">Standard (Supplements)</option>
+                  <option value="Premium">Premium (Imported/Organic)</option>
+                </select>
               </div>
             </div>
-          )}
 
-          {regimen === "Cardio" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Resting Heart Rate (BPM)
-                  </label>
-                  <input
-                    type="number"
-                    value={restingHr}
-                    onChange={(e) => setRestingHr(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Cardio Style Pref.
-                  </label>
-                  <select
-                    value={cardioPreference}
-                    onChange={(e) => setCardioPreference(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  >
-                    <option value="HIIT">HIIT (Intervals)</option>
-                    <option value="LISS">LISS (Steady Cardio)</option>
-                    <option value="Both">Both (Hybrid Cardio)</option>
-                  </select>
-                </div>
-              </div>
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
+                Medical Notes / Allergies / Limitations
+              </label>
+              <textarea
+                value={medicalNotes}
+                onChange={(e) => setMedicalNotes(e.target.value)}
+                placeholder="List injuries, PCOS support requirements, lactose intolerance..."
+                className="w-full h-16 bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground resize-none"
+              />
             </div>
-          )}
+          </div>
 
-          {regimen === "Pehlewani" && (
-            <div className="space-y-4">
+          <button
+            type="button"
+            onClick={handleProfileSubmit}
+            className="btn-primary w-full mt-8"
+          >
+            Next: Core Regimen baselines →
+          </button>
+        </div>
+      )}
+
+      {step === "stats" && (
+        <div className="space-y-6">
+          <h3 className="display-md text-primary flex items-center gap-2">
+            <Dumbbell className="h-5 w-5" /> Regimen Stats ({regimen})
+          </h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            Declare your current baselines so the OS can calibrate week-by-week loading variables.
+          </p>
+
+          <div className="space-y-4">
+            {regimen === "Powerlifting" && (
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Max Hindu Pushups (Dand)
-                  </label>
-                  <input
-                    type="number"
-                    value={maxDands}
-                    onChange={(e) => setMaxDands(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Squat 1RM (kg)</label>
+                  <input type="number" value={squatPr} onChange={(e) => setSquatPr(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Max Hindu Squats (Bethak)
-                  </label>
-                  <input
-                    type="number"
-                    value={maxBethaks}
-                    onChange={(e) => setMaxBethaks(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Bench 1RM (kg)</label>
+                  <input type="number" value={benchPr} onChange={(e) => setBenchPr(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Gada Weight (kg)
-                  </label>
-                  <input
-                    type="number"
-                    value={gadaWeight}
-                    onChange={(e) => setGadaWeight(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Deadlift 1RM (kg)</label>
+                  <input type="number" value={deadliftPr} onChange={(e) => setDeadliftPr(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {regimen === "Hyrox" && (
-            <div className="space-y-4">
+            {regimen === "Calisthenics" && (
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Strict Pull-ups</label>
+                  <input type="number" value={maxPullups} onChange={(e) => setMaxPullups(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Push-ups</label>
+                  <input type="number" value={maxPushups} onChange={(e) => setMaxPushups(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
+                </div>
+              </div>
+            )}
+
+            {regimen === "Pehelwani" && (
               <div className="grid sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    1k Run PR (MM:SS)
-                  </label>
-                  <input
-                    type="text"
-                    value={onekRunTime}
-                    onChange={(e) => setOnekRunTime(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Dands (Pushups)</label>
+                  <input type="number" value={maxDands} onChange={(e) => setMaxDands(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Wall Balls PR Reps
-                  </label>
-                  <input
-                    type="number"
-                    value={wallBallsPr}
-                    onChange={(e) => setWallBallsPr(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Max Bethaks (Squats)</label>
+                  <input type="number" value={maxBethaks} onChange={(e) => setMaxBethaks(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Sled Push 50m Max (kg)
-                  </label>
-                  <input
-                    type="number"
-                    value={sledPushLoad}
-                    onChange={(e) => setSledPushLoad(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Mace (Gada) Weight (kg)</label>
+                  <input type="number" value={gadaWeight} onChange={(e) => setGadaWeight(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {regimen === "Hybrid" && (
-            <div className="space-y-4">
-              <div className="grid sm:grid-cols-3 gap-4">
+            {regimen === "Cardio" || regimen === "Hybrid" ? (
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    5K Run PR
-                  </label>
-                  <input
-                    type="text"
-                    value={fivekPr}
-                    onChange={(e) => setFivekPr(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Current 5K PR (MM:SS)</label>
+                  <input type="text" value={fivekPr} onChange={(e) => setFivekPr(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
                 <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Squat 1RM (kg)
-                  </label>
-                  <input
-                    type="number"
-                    value={squatPr}
-                    onChange={(e) => setSquatPr(Number(e.target.value))}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">
-                    Strength/Cardio Ratio
-                  </label>
-                  <select
-                    value={hybridRatio}
-                    onChange={(e) => setHybridRatio(e.target.value)}
-                    className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary text-foreground"
-                  >
-                    <option value="50/50">Balanced (50% Strength / 50% Cardio)</option>
-                    <option value="70/30">Strength Focus (70% Lift / 30% Run)</option>
-                    <option value="30/70">Cardio Focus (30% Lift / 70% Run)</option>
-                  </select>
+                  <label className="block text-xs uppercase tracking-wider text-muted-foreground mb-2">Resting Heart Rate (BPM)</label>
+                  <input type="number" value={restingHr} onChange={(e) => setRestingHr(Number(e.target.value))} className="w-full bg-surface-2 border border-border rounded-lg px-4 py-3 text-sm focus:outline-none text-foreground" />
                 </div>
               </div>
-            </div>
-          )}
+            ) : null}
+          </div>
 
           <div className="flex gap-3 mt-8">
             <button type="button" onClick={() => setStep("profile")} className="btn-ghost flex-1">
               ← Back
             </button>
             <button type="button" onClick={handleCalculate} className="btn-primary flex-1">
-              Generate 4-Week Program
+              Generate Custom Plan
             </button>
           </div>
         </div>
       )}
 
       {step === "result" && weeklyPlans.length > 0 && (
-        <div>
-          <div className="flex justify-between items-center mb-6">
+        <div className="space-y-6">
+          <div className="flex justify-between items-center border-b border-border pb-4">
             <div>
-              <h3 className="display-md text-primary">Generated 4-Week Custom Plan</h3>
+              <h3 className="display-md text-primary">{regimen} 4-Week Custom Plan</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                For {name || "Athlete"} · {weight}kg · {regimen} Focus
+                Calibrated for {name || "Athlete"} · {weight}kg · {experience} Tier
               </p>
             </div>
-            {user && (
-              <button
-                type="button"
-                onClick={saveWorkout}
-                disabled={saveStatus === "saving" || saveStatus === "saved"}
-                className={`text-xs px-4 py-2 rounded-lg border transition font-mono uppercase tracking-wider font-semibold ${
-                  saveStatus === "saved"
-                    ? "bg-green-600 border-green-600 text-white cursor-default"
-                    : saveStatus === "saving"
-                      ? "bg-primary/50 border-primary/50 text-white cursor-not-allowed"
-                      : "btn-primary"
-                }`}
-              >
-                {saveStatus === "saving" && "Saving..."}
-                {saveStatus === "saved" && "✓ Saved to Profile"}
-                {saveStatus === "idle" && "Save Plan"}
-              </button>
-            )}
+            <button
+              onClick={saveWorkout}
+              disabled={saveStatus === "saving" || saveStatus === "saved"}
+              className={`text-xs px-4 py-2.5 rounded-lg border transition font-mono uppercase font-bold tracking-wider ${
+                saveStatus === "saved"
+                  ? "bg-green-600 border-green-600 text-white"
+                  : "btn-primary"
+              }`}
+            >
+              {saveStatus === "saving" && "Saving..."}
+              {saveStatus === "saved" ? "✓ Saved Locally" : "Save Plan"}
+            </button>
           </div>
 
+          {/* ADVANCED PLAN ACCESS BLOCKED BANNER */}
+          {!isSubscribed && (
+            <div className="bg-ember/15 border border-ember/30 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-foreground font-mono uppercase tracking-wider flex items-center gap-1.5">
+                  <Zap className="h-4 w-4 text-primary" /> Advanced Diet Plan & Analytics Locked
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Subscribe to the Elite Tier (₹599/yr) to unlock custom micro-nutrient logs, complete thali EAA targets, and advanced progressive overload algorithms.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSubscriptionModalOpen(true)}
+                className="btn-primary !py-2 !px-4 text-[10px] font-mono tracking-widest flex-shrink-0"
+              >
+                Unlock Elite OS
+              </button>
+            </div>
+          )}
+
           {/* WEEK SELECTOR */}
-          <div className="flex justify-center gap-2 mb-6">
+          <div className="flex justify-center gap-2">
             {[1, 2, 3, 4].map((w) => (
               <button
                 key={w}
@@ -1241,38 +1027,37 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
             ))}
           </div>
 
-          {/* WEEKLY CONTENT */}
           <div className="grid md:grid-cols-12 gap-6">
             {/* WORKOUTS COLUMN */}
             <div className="md:col-span-7 space-y-4">
-              <h4 className="font-display text-xl border-b border-border pb-2 flex items-center gap-2">
+              <h4 className="font-display text-xl border-b border-border pb-2 flex items-center gap-2 uppercase">
                 <Dumbbell className="h-5 w-5 text-primary" /> Training Split
               </h4>
               {weeklyPlans[activeWeek - 1].workouts.map((w, idx) => (
-                <div
-                  key={idx}
-                  className="bg-surface-2 border border-border p-4 rounded-xl hover:border-primary/20 transition"
-                >
-                  <div className="flex justify-between items-baseline mb-3">
-                    <span className="text-xs uppercase tracking-widest text-primary font-mono font-semibold">
+                <div key={idx} className="bg-surface-2 border border-border p-4 rounded-xl space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs uppercase tracking-widest text-primary font-mono font-bold">
                       {w.day}
                     </span>
-                    <span className="text-xs text-muted-foreground font-semibold">{w.focus}</span>
+                    <span className="text-xs text-muted-foreground font-semibold font-mono">{w.focus}</span>
                   </div>
                   <div className="space-y-3">
                     {w.exercises.map((ex, exIdx) => (
-                      <div key={exIdx} className="bg-surface p-3 rounded-lg border border-border/50">
+                      <div key={exIdx} className="bg-surface p-3 rounded-lg border border-border/40">
                         <div className="flex justify-between items-start">
-                          <p className="font-semibold text-xs text-foreground">{ex.name}</p>
+                          <p className="font-bold text-xs text-foreground font-mono">{ex.name}</p>
                           <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded font-mono">
                             {ex.sets} sets × {ex.reps}
                           </span>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-1 font-mono">
-                          Target Load: {ex.weight}
+                        <p className="text-[11px] text-primary/80 font-mono mt-1">
+                          Rest: {ex.rest}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">
-                          {ex.notes}
+                        <p className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                          Suggested Weight: {ex.weight}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed italic">
+                          "{ex.notes}"
                         </p>
                       </div>
                     ))}
@@ -1283,14 +1068,10 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
 
             {/* DIET COLUMN */}
             <div className="md:col-span-5 space-y-4">
-              <h4 className="font-display text-xl border-b border-border pb-2 flex items-center gap-2">
+              <h4 className="font-display text-xl border-b border-border pb-2 flex items-center gap-2 uppercase">
                 <Clipboard className="h-5 w-5 text-primary" /> Nutrition Plan
               </h4>
               <div className="bg-surface-2 border border-border p-5 rounded-xl space-y-4">
-                <div className="flex justify-between items-center text-xs text-muted-foreground font-mono uppercase">
-                  <span>Meal Slot</span>
-                  <span>Custom Menu Details</span>
-                </div>
                 {weeklyPlans[activeWeek - 1].diet.map((item, idx) => (
                   <div key={idx} className="border-t border-border/50 pt-3 first:border-0 first:pt-0">
                     <p className="text-xs font-bold text-foreground font-mono uppercase tracking-wider">
@@ -1304,6 +1085,21 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
                     </p>
                   </div>
                 ))}
+
+                {/* ADVANCED DIET OPTIONS */}
+                {isSubscribed && (
+                  <div className="border-t border-primary/20 pt-4 mt-4 bg-primary/5 p-3 rounded-xl border border-primary/10 space-y-2">
+                    <p className="text-xs font-bold text-primary font-mono uppercase tracking-wider flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4" /> Elite Nutrient Analysis
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      <strong>EAA Profile</strong>: Fermented Urad dal + rice thali matching verified complete amino profiles.
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      <strong>Electrolytes</strong>: 1.5L water replacement per kg weight lost during heavy Pehelwani/wrestling sessions.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1312,36 +1108,67 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
 
       {step === "logs" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center border-b border-border pb-4">
-            <div>
-              <h3 className="display-md text-primary flex items-center gap-2">
-                <Trophy className="h-5 w-5" /> Progress Log Tracker
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Log your weight, steps, PR breakthroughs, and mark training completions.
-              </p>
-            </div>
-          </div>
-
           <div className="grid md:grid-cols-12 gap-6">
-            {/* LOG FORM */}
+            {/* DAILY WARRIOR CHECKLIST (5 cols) */}
             <div className="md:col-span-5 bg-surface-2 border border-border p-5 rounded-xl space-y-4">
-              <h4 className="font-display text-lg">Log Today's Entry</h4>
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <label className="block text-muted-foreground mb-1 uppercase tracking-wider">Date</label>
-                  <input
-                    type="date"
-                    value={logDate}
-                    onChange={(e) => setLogDate(e.target.value)}
-                    className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary"
-                  />
+              <div className="text-center space-y-2 pb-4 border-b border-border/40">
+                <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+                  {/* PROGRESS RING */}
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" className="stroke-muted" strokeWidth="6" fill="transparent" />
+                    <circle
+                      cx="48"
+                      cy="48"
+                      r="40"
+                      className="stroke-primary transition-all duration-500"
+                      strokeWidth="6"
+                      fill="transparent"
+                      strokeDasharray={251.2}
+                      strokeDashoffset={251.2 - (251.2 * getConsistencyScore()) / 100}
+                    />
+                  </svg>
+                  <span className="absolute text-sm font-mono text-foreground font-black">
+                    {getConsistencyScore()}%
+                  </span>
                 </div>
+                <h4 className="text-xs uppercase font-mono tracking-widest text-muted-foreground">Daily Warrior Score</h4>
+              </div>
 
-                <div className="grid grid-cols-2 gap-3">
+              {/* CHECKLIST ITEMS */}
+              <div className="space-y-3">
+                <div onClick={() => setChkHrv(!chkHrv)} className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary/50 transition">
+                  <span className="text-xs font-mono text-foreground">1. HRV Readiness Measured</span>
+                  {chkHrv ? <CheckCircle className="h-4 w-4 text-primary" /> : <div className="h-4 w-4 rounded-full border border-border" />}
+                </div>
+                <div onClick={() => setChkMobility(!chkMobility)} className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary/50 transition">
+                  <span className="text-xs font-mono text-foreground">2. 10 Min Morning Mobility</span>
+                  {chkMobility ? <CheckCircle className="h-4 w-4 text-primary" /> : <div className="h-4 w-4 rounded-full border border-border" />}
+                </div>
+                <div onClick={() => setChkTraining(!chkTraining)} className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary/50 transition">
+                  <span className="text-xs font-mono text-foreground">3. Programmed Training Done</span>
+                  {chkTraining ? <CheckCircle className="h-4 w-4 text-primary" /> : <div className="h-4 w-4 rounded-full border border-border" />}
+                </div>
+                <div onClick={() => setChkMacros(!chkMacros)} className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary/50 transition">
+                  <span className="text-xs font-mono text-foreground">4. Nutrition Target Met</span>
+                  {chkMacros ? <CheckCircle className="h-4 w-4 text-primary" /> : <div className="h-4 w-4 rounded-full border border-border" />}
+                </div>
+                <div onClick={() => setChkSleep(!chkSleep)} className="flex items-center justify-between p-3 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary/50 transition">
+                  <span className="text-xs font-mono text-foreground">5. 8 Hours Recovery Sleep</span>
+                  {chkSleep ? <CheckCircle className="h-4 w-4 text-primary" /> : <div className="h-4 w-4 rounded-full border border-border" />}
+                </div>
+              </div>
+            </div>
+
+            {/* WEIGHT LOGS & PR PROGRESS GRAPH MOCK (7 cols) */}
+            <div className="md:col-span-7 bg-surface-2 border border-border p-5 rounded-xl space-y-4">
+              <h4 className="font-display text-lg flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-primary" /> Warrior Progression Logs
+              </h4>
+
+              <div className="space-y-4 text-xs font-mono">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-muted-foreground mb-1 uppercase tracking-wider">Weight (kg)</label>
+                    <label className="block text-muted-foreground mb-1 uppercase text-[10px]">Weight Today (kg)</label>
                     <input
                       type="number"
                       value={logWeight}
@@ -1350,7 +1177,7 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
                     />
                   </div>
                   <div>
-                    <label className="block text-muted-foreground mb-1 uppercase tracking-wider">Steps Count</label>
+                    <label className="block text-muted-foreground mb-1 uppercase text-[10px]">Daily Steps</label>
                     <input
                       type="number"
                       value={logSteps}
@@ -1360,131 +1187,81 @@ export function WorkoutCustomizer({ defaultRegimen = "Powerlifting" }: { default
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 py-2">
+                <div className="flex gap-2">
                   <input
-                    type="checkbox"
-                    id="workoutDone"
-                    checked={logWorkoutDone}
-                    onChange={(e) => setLogWorkoutDone(e.target.checked)}
-                    className="h-4 w-4 bg-surface border-border text-primary rounded focus:ring-primary"
+                    type="text"
+                    placeholder="New PR lift"
+                    value={newPrMovement}
+                    onChange={(e) => setNewPrMovement(e.target.value)}
+                    className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none"
                   />
-                  <label htmlFor="workoutDone" className="text-muted-foreground uppercase tracking-wider">
-                    Workout Completed Today
-                  </label>
+                  <input
+                    type="text"
+                    placeholder="Weight/Reps"
+                    value={newPrValue}
+                    onChange={(e) => setNewPrValue(e.target.value)}
+                    className="w-24 bg-surface border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newPrMovement.trim() && newPrValue.trim()) {
+                        setPrList([...prList, { movement: newPrMovement, value: newPrValue }]);
+                        setNewPrMovement("");
+                        setNewPrValue("");
+                      }
+                    }}
+                    className="btn-primary !p-2 rounded-lg flex items-center justify-center"
+                  >
+                    <Plus className="h-4 w-4 text-background" />
+                  </button>
                 </div>
 
-                {/* PR TRACKER */}
-                <div className="border-t border-border/50 pt-3">
-                  <label className="block text-muted-foreground mb-2 uppercase tracking-wider font-bold">
-                    Log a New Personal Record (PR)
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="e.g. Squat 1RM"
-                      value={newPrMovement}
-                      onChange={(e) => setNewPrMovement(e.target.value)}
-                      className="flex-1 bg-surface border border-border rounded-lg px-3 py-1.5 text-foreground focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="e.g. 110 kg"
-                      value={newPrValue}
-                      onChange={(e) => setNewPrValue(e.target.value)}
-                      className="w-24 bg-surface border border-border rounded-lg px-3 py-1.5 text-foreground focus:outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={addPrUpdate}
-                      className="btn-primary !p-2 rounded-lg flex items-center justify-center"
-                    >
-                      <Plus className="h-4 w-4 text-background" />
-                    </button>
+                {prList.length > 0 && (
+                  <div className="bg-surface p-2 rounded-lg border border-border space-y-1">
+                    {prList.map((pr, idx) => (
+                      <div key={idx} className="flex justify-between text-[10px] text-muted-foreground font-mono">
+                        <span>{pr.movement}</span>
+                        <span className="text-primary font-bold">{pr.value}</span>
+                      </div>
+                    ))}
                   </div>
-                  {prList.length > 0 && (
-                    <div className="mt-2 space-y-1 bg-surface p-2 rounded-lg border border-border/40">
-                      {prList.map((pr, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-[10px] text-muted-foreground font-mono">
-                          <span>{pr.movement}</span>
-                          <span className="text-primary font-bold">{pr.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                )}
 
-                <div>
-                  <label className="block text-muted-foreground mb-1 uppercase tracking-wider">Workout/Diet Notes</label>
-                  <textarea
-                    value={logNotes}
-                    onChange={(e) => setLogNotes(e.target.value)}
-                    placeholder="How did you feel? Energy levels, nutrition adherence..."
-                    className="w-full h-16 bg-surface border border-border rounded-lg px-3 py-2 text-foreground focus:outline-none focus:border-primary resize-none"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={handleLogProgress}
+                  className="btn-primary w-full py-2.5 text-xs font-mono uppercase tracking-wider"
+                >
+                  Save Log Entry
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={handleLogProgress}
-                className="btn-primary w-full mt-4 !py-2.5 text-xs font-mono uppercase tracking-wider"
-              >
-                Save Log Entry
-              </button>
-            </div>
-
-            {/* LOG HISTORY */}
-            <div className="md:col-span-7 space-y-4">
-              <h4 className="font-display text-lg flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" /> Log Entry History
-              </h4>
-
-              {logs.length === 0 ? (
-                <div className="text-center py-10 bg-surface-2 border border-dashed border-border rounded-xl">
-                  <p className="text-xs text-muted-foreground">No logs captured yet. Save your first daily log on the left!</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                  {logs.map((l, idx) => (
-                    <div key={idx} className="bg-surface-2 border border-border p-4 rounded-xl space-y-2">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-mono text-primary font-bold">{l.date}</span>
-                        <span className="flex items-center gap-1 text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-primary/10 text-primary">
-                          {l.workoutCompleted ? "✓ WORKOUT DONE" : "REST DAY"}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-xs font-mono py-1 border-y border-border/40">
+              {/* LOGS HISTORY */}
+              <div className="space-y-2 pt-2">
+                <h5 className="text-[10px] uppercase font-mono tracking-widest text-muted-foreground">Log History</h5>
+                {logs.length === 0 ? (
+                  <p className="text-[10px] text-muted-foreground italic">No logs recorded yet.</p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {logs.map((l, idx) => (
+                      <div key={idx} className="bg-surface border border-border p-3 rounded-lg text-[10px] font-mono flex justify-between items-center">
                         <div>
-                          <span className="text-muted-foreground">Weight: </span>
-                          <span className="text-foreground font-bold">{l.weight} kg</span>
+                          <p className="text-primary font-bold">{l.date}</p>
+                          <p className="text-muted-foreground">W: {l.weight}kg · S: {l.steps}</p>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Steps: </span>
-                          <span className="text-foreground font-bold">{l.steps.toLocaleString()}</span>
-                        </div>
+                        {l.prUpdates && l.prUpdates.length > 0 && (
+                          <div className="text-right">
+                            {l.prUpdates.map((pr, pIdx) => (
+                              <p key={pIdx} className="text-foreground">{pr.movement}: <span className="text-primary font-bold">{pr.value}</span></p>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                      {l.prUpdates && l.prUpdates.length > 0 && (
-                        <div className="bg-surface p-2 rounded-lg border border-primary/20 space-y-1">
-                          <p className="text-[10px] text-primary uppercase font-bold tracking-wider font-mono flex items-center gap-1">
-                            <Trophy className="h-3 w-3" /> PR Achieved:
-                          </p>
-                          {l.prUpdates.map((pr, prIdx) => (
-                            <div key={prIdx} className="flex justify-between text-[11px] font-mono">
-                              <span className="text-muted-foreground">{pr.movement}</span>
-                              <span className="text-foreground font-bold">{pr.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {l.notes && (
-                        <p className="text-xs text-muted-foreground italic leading-relaxed">
-                          "{l.notes}"
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

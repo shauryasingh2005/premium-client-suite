@@ -25,94 +25,124 @@ export const Route = createFileRoute("/workouts")({
 });
 
 type RegimenKey =
-  | "Powerlifting"
-  | "Cardio"
-  | "Pehlewani"
-  | "Hyrox"
   | "Hybrid"
-  | "Bodybuilding"
+  | "Powerlifting"
+  | "GymGoer"
   | "Calisthenics"
-  | "Running";
+  | "Dumbbell"
+  | "Cardio"
+  | "Mugdal"
+  | "Pehelwani"
+  | "MMA"
+  | "Power"
+  | "Maintenance";
 
 const REGIMENS_DATA = [
   {
-    key: "Powerlifting" as RegimenKey,
-    name: "Powerlifting",
-    desc: "Focus on building absolute maximal strength across the 'Big Three' compound lifts: Squat, Bench Press, and Deadlift. Uses percentage-based training (1RM) and long rest periods.",
-    split: "3 - 4 Days / Week",
-    focus: "Max Strength & Core Stability",
-    difficulty: "Advanced",
-    img: heroImg,
-  },
-  {
-    key: "Cardio" as RegimenKey,
-    name: "Cardio & HIIT",
-    desc: "High-intensity intervals, LISS, and heart-rate zone training. Designed to maximize metabolic rate, burn calories, build cardiac capacity, and improve Vo2 Max.",
-    split: "3 - 5 Days / Week",
-    focus: "Endurance & Calorie Burn",
-    difficulty: "All Levels",
-    img: runningImg,
-  },
-  {
-    key: "Pehlewani" as RegimenKey,
-    name: "Pehlewani (Traditional Indian)",
-    desc: "Ancient Indian physical culture. Focuses on functional power, stamina, and deep core conditioning using Gada (maces), Jodi (wooden clubs), Dands (Hindu pushups), and Bethaks (Hindu squats). Includes high-energy recovery nutrition.",
-    split: "4 - 6 Days / Week",
-    focus: "Functional Power & Stamina",
-    difficulty: "Intermediate",
-    img: boxingImg,
-  },
-  {
-    key: "Hyrox" as RegimenKey,
-    name: "Hyrox Fitness Racing",
-    desc: "Elite functional training combining running and heavy workout stations (SkiErg, Sled Push/Pull, Burpees, Rowing, Farmers Carry, Wall Balls). Tests grit and metabolic efficiency.",
-    split: "4 - 5 Days / Week",
-    focus: "Aerobic Capacity & Grit",
-    difficulty: "Advanced",
-    img: heroImg,
-  },
-  {
     key: "Hybrid" as RegimenKey,
     name: "Hybrid Athlete",
-    desc: "The best of both worlds. Concurrent training designed to build elite squat/deadlift strength while maintaining marathon-level cardiovascular endurance.",
+    desc: "The best of both worlds. Concurrent training designed to build elite compound barbell strength while maintaining high-capacity endurance.",
     split: "4 - 6 Days / Week",
     focus: "Strength & Running Stamina",
     difficulty: "Advanced",
     img: runningImg,
   },
   {
-    key: "Bodybuilding" as RegimenKey,
-    name: "Bodybuilding",
-    desc: "Traditional hypertrophy training designed for muscle aesthetics, high-volume conditioning, and symmetrical physique development using targeted splits.",
-    split: "4 - 5 Days / Week",
-    focus: "Muscle Hypertrophy & Density",
+    key: "Powerlifting" as RegimenKey,
+    name: "Powerlifting",
+    desc: "Focus on building absolute maximal force across the Big Three: Squat, Bench Press, and Deadlift. Heavy CNS-recruiting loading cycles.",
+    split: "3 - 4 Days / Week",
+    focus: "Max Strength & CNS Power",
+    difficulty: "Advanced",
+    img: heroImg,
+  },
+  {
+    key: "GymGoer" as RegimenKey,
+    name: "General Gym Goer",
+    desc: "Hypertrophy and physical conditioning. Uses mechanical tension and metabolic stress to optimize muscle volume and density.",
+    split: "3 - 5 Days / Week",
+    focus: "Hypertrophy & Body Recomp",
     difficulty: "Intermediate",
     img: yogaImg,
   },
   {
     key: "Calisthenics" as RegimenKey,
-    name: "Calisthenics",
-    desc: "Bodyweight mastery focusing on strength, balance, and gymnastic control. Progresses through pull-ups, dips, push-ups, handstands, and levers.",
+    name: "Calisthenics Mastery",
+    desc: "Gymnastic controls and relative bodyweight strength. Progression through pull-ups, dips, push-ups, and advanced holds.",
     split: "3 - 4 Days / Week",
-    focus: "Relative Strength & Control",
+    focus: "Bodyweight Power & Balance",
     difficulty: "Intermediate",
     img: boxingImg,
   },
   {
-    key: "Running" as RegimenKey,
-    name: "Running & Athletics",
-    desc: "Structured road and track training programs covering 5K PR building, tempo runs, active interval training, and single-leg joint health preservation.",
-    split: "3 - 5 Days / Week",
-    focus: "Speed, Pacing & Joint Health",
+    key: "Dumbbell" as RegimenKey,
+    name: "Dumbbell-Only Training",
+    desc: "Unilateral strength and stabilizer recruitment. Excellent for correcting bilateral deficits and promoting structural balance.",
+    split: "3 - 4 Days / Week",
+    focus: "Stabilization & Joint Balance",
     difficulty: "All Levels",
     img: runningImg,
+  },
+  {
+    key: "Cardio" as RegimenKey,
+    name: "Cardiovascular Conditioning",
+    desc: "Dual-track conditioning blending High-Intensity Interval Training (HIIT) with Low-Intensity Steady State (LISS) cardio.",
+    split: "3 - 5 Days / Week",
+    focus: "Vo2 Max & Aerobic Base",
+    difficulty: "All Levels",
+    img: runningImg,
+  },
+  {
+    key: "Mugdal" as RegimenKey,
+    name: "Mugdal (Indian Club) Training",
+    desc: "Circular movement patterns using traditional heavy wooden clubs (Mugdals) to build extreme shoulder mobility, rotational core, and grip.",
+    split: "2 - 3 Days / Week",
+    focus: "Shoulder Health & Rotational Grip",
+    difficulty: "Intermediate",
+    img: heroImg,
+  },
+  {
+    key: "Pehelwani" as RegimenKey,
+    name: "Pehelwani (Traditional Wrestling)",
+    desc: "Traditional Indian Akhada physical culture. Features high-volume Dands (pushups), Bethaks (squats), and wrestling-specific capacity drills.",
+    split: "4 - 6 Days / Week",
+    focus: "Functional Stamina & Core Power",
+    difficulty: "Advanced",
+    img: boxingImg,
+  },
+  {
+    key: "MMA" as RegimenKey,
+    name: "MMA Fight Readiness",
+    desc: "Wrestling takedowns, clinch works, and shadowboxing circuits designed to navigate the multi-system anaerobic/aerobic demand of combat.",
+    split: "3 - 5 Days / Week",
+    focus: "Combat Conditioning & Resilience",
+    difficulty: "Advanced",
+    img: boxingImg,
+  },
+  {
+    key: "Power" as RegimenKey,
+    name: "Power & Explosiveness",
+    desc: "Contrast training utilising Post-Activation Potentiation (PAP) to maximize motor-unit recruitment and vertical/horizontal force velocity.",
+    split: "3 Days / Week",
+    focus: "Neuromuscular Explosiveness",
+    difficulty: "Advanced",
+    img: heroImg,
+  },
+  {
+    key: "Maintenance" as RegimenKey,
+    name: "Basic Maintenance Training",
+    desc: "General joint preservation, active mobility, and light metabolic conditioning designed for longevity and overall physical readiness.",
+    split: "2 - 3 Days / Week",
+    focus: "Joint Mobility & General Health",
+    difficulty: "All Levels",
+    img: yogaImg,
   },
 ];
 
 const FILTERS = ["Duration", "Muscle group", "Equipment", "Goal", "Intensity"];
 
 export default function WorkoutsPage() {
-  const [activeRegimen, setActiveRegimen] = useState<RegimenKey>("Powerlifting");
+  const [activeRegimen, setActiveRegimen] = useState<RegimenKey>("Hybrid");
 
   const selectRegimen = (key: RegimenKey) => {
     setActiveRegimen(key);
@@ -196,9 +226,9 @@ export default function WorkoutsPage() {
                   </p>
                 </div>
               </div>
-              <div className="px-5 pb-5 pt-2 border-t border-border/50 text-[11px] flex justify-between items-center text-muted-foreground">
+              <div className="px-5 pb-5 pt-2 border-t border-border/50 text-[11px] flex justify-between items-center text-muted-foreground font-mono">
                 <span>{r.split}</span>
-                <span className="text-primary font-mono font-medium uppercase tracking-wider">
+                <span className="text-primary font-bold uppercase tracking-wider">
                   Select →
                 </span>
               </div>

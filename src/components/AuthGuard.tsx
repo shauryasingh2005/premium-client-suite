@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "../lib/auth-context";
+import { ShieldAlert, LogIn } from "lucide-react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -9,8 +10,6 @@ interface AuthGuardProps {
 
 export function AuthGuard({
   children,
-  title = "Unlock Premium Feature",
-  description = "This page contains premium content. Sign in to access guided workouts, customized nutrition plans, and smart coaching.",
 }: AuthGuardProps) {
   const { user, loading } = useAuth();
 
@@ -36,28 +35,27 @@ export function AuthGuard({
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
-        <div className="max-w-md w-full card-surface p-8 sm:p-10 text-center relative overflow-hidden backdrop-blur-md bg-surface/80">
-          <div className="absolute -top-12 -right-12 h-24 w-24 rounded-full bg-primary/20 blur-xl pointer-events-none" />
-
-          <p className="eyebrow">Premium Access</p>
-          <h2 className="display-md mt-4">{title}</h2>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{description}</p>
-
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/auth" className="btn-primary w-full sm:w-auto">
-              Sign In with OTP
-            </Link>
-            <Link to="/pricing" className="btn-ghost w-full sm:w-auto">
-              View Pricing
+  return (
+    <>
+      {!user && (
+        <div className="bg-primary/10 border-b border-primary/20 text-foreground py-3 px-4 text-center text-xs backdrop-blur-md sticky top-16 z-40 transition-all duration-300">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3">
+            <span className="flex items-center gap-1.5 font-medium text-primary">
+              <ShieldAlert className="h-4 w-4" /> Guest Mode Active
+            </span>
+            <span className="text-muted-foreground">
+              You have full access to workouts, diets, and AI tools. Sign in to sync your training calendar and progress logs to the cloud.
+            </span>
+            <Link
+              to="/auth"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary text-background font-bold text-[10px] hover:bg-primary/95 transition uppercase tracking-wider font-mono"
+            >
+              <LogIn className="h-3 w-3" /> Sign In Now
             </Link>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
+      )}
+      {children}
+    </>
+  );
 }

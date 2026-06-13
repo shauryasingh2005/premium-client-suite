@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import nutritionImg from "@/assets/nutrition-bowl.jpg";
+import { useState, useEffect } from "react";
 import { PageHeader, Section } from "@/components/Section";
 import { AuthGuard } from "@/components/AuthGuard";
-import { Sparkles, ArrowRight, Apple, Flame, ChevronRight } from "lucide-react";
+import { SubscriptionModal } from "@/components/SubscriptionModal";
+import { Apple, Flame, ChevronRight, Zap, ShieldCheck, Check } from "lucide-react";
 
 export const Route = createFileRoute("/nutrition")({
   head: () => ({
@@ -165,12 +165,31 @@ const DIETS_DATA: DietDetail[] = [
 
 function NutritionPage() {
   const [activeDiet, setActiveDiet] = useState<DietDetail>(DIETS_DATA[0]);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subModalOpen, setSubModalOpen] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("fitforge_subscribed_guest") === "true";
+    if (saved) setIsSubscribed(true);
+  }, []);
+
+  const handleSubscribeSuccess = () => {
+    setIsSubscribed(true);
+    localStorage.setItem("fitforge_subscribed_guest", "true");
+    alert("Elite Membership Active! Advanced plans are unlocked.");
+  };
 
   return (
     <AuthGuard
       title="Intelligent Nutrition Engine"
       description="Unlock macro-balanced, Indian-localised customized meal planners, barcode scanners, and calorie trackers."
     >
+      <SubscriptionModal
+        isOpen={subModalOpen}
+        onClose={() => setSubModalOpen(false)}
+        onSuccess={handleSubscribeSuccess}
+      />
+
       <PageHeader
         eyebrow="Nutrition system"
         title="Eat for the plan you’re running."
@@ -182,7 +201,7 @@ function NutritionPage() {
         <div className="text-center mb-10">
           <p className="eyebrow">Interactive Diets Hub</p>
           <h2 className="display-lg mt-3">Explore 10 Elite Fitness Diets</h2>
-          <p className="max-w-2xl mx-auto text-sm text-muted-foreground mt-3">
+          <p className="max-w-2xl mx-auto text-sm text-muted-foreground mt-3 font-mono">
             Select a nutrition regimen to analyze macro splits, key food staples, and explore a typical daily menu plan.
           </p>
         </div>
@@ -269,7 +288,7 @@ function NutritionPage() {
                 </h4>
                 <ul className="space-y-2 text-xs">
                   {activeDiet.staples.map((s) => (
-                    <li key={s} className="flex items-center gap-2 bg-surface-2 px-3 py-2.5 rounded-lg border border-border/40">
+                    <li key={s} className="flex items-center gap-2 bg-surface-2 px-3 py-2.5 rounded-lg border border-border/40 font-mono">
                       <span className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                       <span>{s}</span>
                     </li>
@@ -280,7 +299,7 @@ function NutritionPage() {
                 <h4 className="text-xs uppercase tracking-widest text-primary font-mono font-bold mb-3 flex items-center gap-2">
                   <Flame className="h-4 w-4" /> Sample Daily Menu
                 </h4>
-                <div className="space-y-3">
+                <div className="space-y-3 font-mono">
                   {activeDiet.sampleMenu.map((m) => (
                     <div key={m.meal} className="bg-surface-2 p-3 rounded-lg border border-border/40">
                       <span className="text-[10px] font-mono uppercase text-muted-foreground block font-bold">
@@ -295,11 +314,36 @@ function NutritionPage() {
               </div>
             </div>
 
+            {/* INTEGRATE MICRO & HYDRATION LAYER */}
+            <div className="border-t border-border pt-6 grid sm:grid-cols-2 gap-6 font-mono text-xs">
+              <div className="space-y-2 bg-surface-2 p-4 rounded-xl border border-border">
+                <p className="font-bold text-primary flex items-center gap-1">
+                  <ShieldCheck className="h-4 w-4" /> Micronutrients & Vitamins
+                </p>
+                <ul className="space-y-1 list-disc pl-4 text-muted-foreground text-[11px]">
+                  <li><strong>Magnesium</strong>: Muscular recovery & sleep regulation</li>
+                  <li><strong>Zinc</strong>: Tendon/ligament tissue synthesis</li>
+                  <li><strong>Vitamin D & Iron</strong>: Oxygen transportation support</li>
+                </ul>
+              </div>
+
+              <div className="space-y-2 bg-surface-2 p-4 rounded-xl border border-border">
+                <p className="font-bold text-primary flex items-center gap-1">
+                  <Zap className="h-4 w-4" /> Hydration & Electrolytes
+                </p>
+                <ul className="space-y-1 list-disc pl-4 text-muted-foreground text-[11px]">
+                  <li><strong>150% Rule</strong>: 1.5L replacement per 1lb weight lost</li>
+                  <li><strong>Active replenishment</strong>: Buttermilk & coconut water</li>
+                  <li><strong>Complete EAA</strong>: Grains paired with complementary legumes</li>
+                </ul>
+              </div>
+            </div>
+
             <div className="pt-6 border-t border-border flex justify-between items-center">
               <span className="text-xs text-muted-foreground italic">
                 {activeDiet.focus}
               </span>
-              <Link to="/smart-coach" className="btn-primary !py-2.5 !px-5 text-xs">
+              <Link to="/smart-coach" className="btn-primary !py-2.5 !px-5 text-xs font-mono">
                 Build this plan in Smart Coach →
               </Link>
             </div>
@@ -307,52 +351,76 @@ function NutritionPage() {
         </div>
       </Section>
 
-      {/* ORIGINAL SPEC SECTION */}
+      {/* PREMIUM TIERS SECTION */}
       <Section className="!pt-0">
-        <p className="eyebrow">What you get</p>
-        <h2 className="display-lg mt-4 max-w-3xl">Every meal — engineered.</h2>
-        <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            {
-              t: "Macro breakdown",
-              d: "Protein, carbs, fat and calories per meal, with ingredient-level tracking.",
-            },
-            {
-              t: "Weekly meal plans",
-              d: "Breakfast, lunch, dinner and snacks — auto-built for the week.",
-            },
-            {
-              t: "Recipes & prep time",
-              d: "Step-by-step recipes with prep time, difficulty and pantry needs.",
-            },
-            {
-              t: "Macro-locked swaps",
-              d: "Swap any meal — system finds alternatives that hit the same macros.",
-            },
-            { t: "Auto grocery list", d: "One-tap shopping list pulled from your week’s plan." },
-            {
-              t: "Water intake tracker",
-              d: "Smart reminders calibrated to your training load and climate.",
-            },
-            {
-              t: "Barcode + Indian DB",
-              d: "Scan packaged food or search a vast Indian food database.",
-            },
-            {
-              t: "Cheat meal budgeting",
-              d: "Plan indulgences in — the AI rebalances the rest of the week.",
-            },
-            {
-              t: "Macros sync to training",
-              d: "Surplus on lift days, deficit on rest days — automatically.",
-            },
-          ].map((f, i) => (
-            <div key={f.t} className="card-surface p-7">
-              <p className="mono-num text-xs text-primary">{String(i + 1).padStart(2, "0")}</p>
-              <h3 className="font-display text-2xl mt-3">{f.t}</h3>
-              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.d}</p>
+        <div className="text-center mb-10">
+          <p className="eyebrow">Premium OS Access</p>
+          <h2 className="display-lg mt-3">Choose Your Membership</h2>
+          <p className="max-w-2xl mx-auto text-sm text-muted-foreground mt-3">
+            Select a plan to unlock elite custom loading ratios, advanced diet plans, and progress logs.
+          </p>
+        </div>
+
+        <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto font-mono text-xs">
+          {/* MONTHLY */}
+          <div className="card-surface p-6 bg-surface-2 flex flex-col justify-between border border-border">
+            <div>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">Standard</span>
+              <h3 className="display-sm mt-2 text-foreground">Core Monthly</h3>
+              <p className="text-lg font-bold text-primary mt-2">₹199 / Month</p>
+              <ul className="mt-6 space-y-3 text-muted-foreground text-[11px]">
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Basic workout calendar</li>
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Standard diet thali maps</li>
+              </ul>
             </div>
-          ))}
+            <button
+              onClick={() => setSubModalOpen(true)}
+              className="btn-ghost w-full mt-8 uppercase font-bold py-2.5 text-[10px]"
+            >
+              Select Core
+            </button>
+          </div>
+
+          {/* 3 MONTHS */}
+          <div className="card-surface p-6 bg-surface-2 flex flex-col justify-between border border-primary/30 relative">
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] bg-primary text-background font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              Best Value
+            </span>
+            <div>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">Quarterly</span>
+              <h3 className="display-sm mt-2 text-foreground">Pro 3-Month</h3>
+              <p className="text-lg font-bold text-primary mt-2">₹299 / 3 Months</p>
+              <ul className="mt-6 space-y-3 text-muted-foreground text-[11px]">
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Save ₹298 total</li>
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Multi-week progress logs</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => setSubModalOpen(true)}
+              className="btn-primary w-full mt-8 uppercase font-bold py-2.5 text-[10px]"
+            >
+              Select Pro
+            </button>
+          </div>
+
+          {/* YEARLY */}
+          <div className="card-surface p-6 bg-surface-2 flex flex-col justify-between border border-ember">
+            <div>
+              <span className="text-[10px] text-ember uppercase font-bold">Elite Tier</span>
+              <h3 className="display-sm mt-2 text-foreground">Elite Annual</h3>
+              <p className="text-lg font-bold text-primary mt-2">₹599 / Year</p>
+              <ul className="mt-6 space-y-3 text-muted-foreground text-[11px]">
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Elite Intake Profile Form</li>
+                <li className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Custom Micro-nutrient OS</li>
+              </ul>
+            </div>
+            <button
+              onClick={() => setSubModalOpen(true)}
+              className="btn-primary !bg-ember !border-ember w-full mt-8 uppercase font-bold py-2.5 text-[10px] text-foreground"
+            >
+              Select Elite
+            </button>
+          </div>
         </div>
       </Section>
     </AuthGuard>
