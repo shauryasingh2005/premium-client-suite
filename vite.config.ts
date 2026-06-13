@@ -31,12 +31,17 @@ export default defineConfig({
   },
   vite: {
     plugins: [
-      sentryVitePlugin({
-        authToken: getSentryAuthToken(),
-        org: "shaurya-singh-1o",
-        project: "react",
-      }),
-    ],
+      getSentryAuthToken()
+        ? sentryVitePlugin({
+            authToken: getSentryAuthToken(),
+            org: "shaurya-singh-1o",
+            project: "react",
+            errorHandler: (err) => {
+              console.warn("⚠️ Sentry CLI error occurred, bypassing to prevent build crash:", err.message);
+            },
+          })
+        : null,
+    ].filter(Boolean),
     build: {
       sourcemap: true,
     },
